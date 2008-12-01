@@ -5,6 +5,7 @@
 %%%
 %%% Created : 29 Nov 2008 by Yomi Akindayini <yomi@boodah.net>
 %%%-------------------------------------------------------------------
+
 -module(twitterl).
 
 %% Will be useful for getting RSS feeds
@@ -40,7 +41,13 @@ stop() ->
 
 %% Retrieve the top 10 trends, only available under JSON atm.
 trends() ->
-    request_url(?SearchTrendsUrl).
+    %request_url(?SearchTrendsUrl).
+    case request_url(?SearchTrendsUrl) of
+	{ok,Body} ->
+	    Body;
+	{error,Error} ->
+	    {error,Error}
+    end.
 
 %% Used to print out tweets to or from a specific user.
 tweets(User,Type) ->
@@ -66,7 +73,7 @@ term(Term) ->
 %% If an error message is found then we know that the user doesnt exist.
 %%
 user_exists(User) ->
-    Xml = get_xml(?UserTimeUrl ++ User ++ ".rss"),
+    {ok,Xml} = get_xml(?UserTimeUrl ++ User ++ ".rss"),
     case xmerl_xpath:string("//hash/error/text()", Xml) of
 	[{xmlText, _, _, _, Error, text}] ->
 	    {false, User++": "++Error};
@@ -81,12 +88,18 @@ user_exists(User) ->
 followers(User, Pass) ->
     case auth_user(User, Pass) of
 	true ->
-	    request_url(?FollowersUrl, User, Pass);
+	    case request_url(?FollowersUrl, User, Pass) of
+		{ok,Body} ->
+		    Body;
+		{error,Error} ->
+		    {error,Error}
+	    end;
 	false ->
 	    {error}
     end.
 
 %% Get a specific user's twitters.
+%% Don't really need any more, seeing as tweets will do the same thing.
 user_timeline(User) ->
     case user_exists(User) of
 	{false,Error} ->
@@ -101,19 +114,31 @@ public_timeline() ->
 
 %% Get the actual XML response.
 get_xml(Url) ->
-    {ok,{_Status,_Head,Body}} = http:request(Url),
-    % Need to make sure that we don't have an error response here.
-    {Xml, _Rest} = xmerl_scan:string(Body),
-    Xml.
+    case request_url(Url) of
+	{ok,Body} ->
+	    {Xml, _Rest} = xmerl_scan:string(Body),
+	    {ok,Xml};
+	{error,Error} ->
+	    {error,Error}
+    end.
 
 %% Get the the twitters in XML format.
 get_twitters(Url) ->
-    Xml = get_xml(Url),
+    case get_xml(Url) of
+	{ok,Xml} ->
+	    parse_xml(Xml);
+	{error,Error} ->
+	    {error,Error}
+    end.
+
+%% Parses our XML sending each tweet to print_twitters
+parse_xml(Xml) ->
     Twitters = xmerl_xpath:string("//item/title/text()", Xml),
     case 0 =:= length(Twitters) of
 	false ->
 	    print_twitters(lists:reverse(Twitters));
-	_ -> {error,"Unable to find twitters."}
+	_ ->
+	    {error,"Unable to find twitters."}
     end.
     
 
@@ -129,11 +154,16 @@ print_twitters([Twit|Twitters]) ->
 print_twitters([]) ->
     ok.
 
-
+%% Checks to see if the user can actually log in.
 auth_user(Login, Password) ->
     case request_url(?VerifyUrl, Login, Password) of
-        "<authorized>true</authorized>" -> true;
-        _ -> false
+        {ok,Body} ->
+	    case Body of
+		    "<authorized>true</authorized>" -> true;
+		    _ -> false
+	    end;
+	 {error,Error} ->
+	    {error,Error}
     end.
 
 %% Make a request to an URL.
@@ -151,7 +181,7 @@ check_response(Response) ->
         {ok, {Status, _Headers, Body}} -> 
 	    case Status of
 		{_,200,_} ->
-		    Body;
+		    {ok,Body};
 		{_,Code,Msg} ->
 		    {error,{Code,Msg}}
 	    end;
