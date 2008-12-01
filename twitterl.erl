@@ -1,15 +1,29 @@
 %%%-------------------------------------------------------------------
-%%% File    : twitter_api.erl
+%%% File    : twitterl.erl
 %%% Author  : Yomi (baphled boodah) Akindayini <yomi@boodah.net>
 %%% Description : Basic Twitter API, used to interact with twitter.
 %%%
+%%% twitterl is free software: you can redistribute it and/or modify
+%%% it under the terms of the GNU Lesser General Public License as 
+%%% published by the Free Software Foundation, either version 3 of 
+%%% the License, or (at your option) any later version.
+%%%
+%%% twitterl is distributed in the hope that it will be useful,
+%%% but WITHOUT ANY WARRANTY; without even the implied warranty of
+%%% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+%%% GNU Lesser General Public License for more details.
+%%%
+%%% You should have received a copy of the GNU Lesser General Public 
+%%% License along with json_parser.  If not, see 
+%%% <http://www.gnu.org/licenses/>.
+%%%
 %%% Created : 29 Nov 2008 by Yomi Akindayini <yomi@boodah.net>
 %%%-------------------------------------------------------------------
-
 -module(twitterl).
+-author("Yomi (baphled) Akindayini").
 
 %% Will be useful for getting RSS feeds
-%-import(xml_parse).
+-import(json_parser).
 
 %-compile(export_all).
 -export([init/0,stop/0]).
@@ -41,10 +55,10 @@ stop() ->
 
 %% Retrieve the top 10 trends, only available under JSON atm.
 trends() ->
-    %request_url(?SearchTrendsUrl).
     case request_url(?SearchTrendsUrl) of
 	{ok,Body} ->
-	    Body;
+	    Json = json_parser:dvm_parser(list_to_binary(Body)),
+	    Json;
 	{error,Error} ->
 	    {error,Error}
     end.
