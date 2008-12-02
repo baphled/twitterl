@@ -21,12 +21,14 @@
 %%%-------------------------------------------------------------------
 -module(twitterl).
 -author("Yomi (baphled) Akindayini").
+-vsn(01).
+-purpose("Twitter client to help me get used to Erlang").
 
 %% Will be useful for getting RSS feedsparsing JSON
 -import(json_parser).
 
 %-compile(export_all).
--export([init/0,stop/0]).
+-export([start/0,stop/0]).
 %% Search methods
 -export([auth_user/2,trends/0,tweets/2,term/1]).
 %% Twitter specific methods
@@ -47,7 +49,7 @@
 -define(SearchTrendsUrl, ?SearchUrl"/trends.json").
 -define(VerifyUrl, ?TwitUrl"/account/verify_credentials.xml").
 
-init() ->
+start() ->
     inets:start().
 
 stop() ->
@@ -68,7 +70,8 @@ trends() ->
 			false ->
 			    loop_json([],Result);
 		        true ->
-			    {error,'Unable to retrieve trends'}
+			    %{error,'Unable to retrieve trends'}
+			    trends()
 		    end;
 		_ ->
 		    {error,'Can not retrieve trends.'}
