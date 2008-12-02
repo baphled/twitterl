@@ -64,7 +64,12 @@ trends() ->
 	    [H|T] = Reply,
 	    case H of
 		{_,Result} ->
-		    loop_json([],Result);
+		    case is_binary(Result) of
+			false ->
+			    loop_json([],Result);
+		        true ->
+			    {error,'Unable to retrieve trends'}
+		    end;
 		_ ->
 		    {error,'Can not retrieve trends.'}
 	    end;
