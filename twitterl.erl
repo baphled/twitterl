@@ -54,14 +54,33 @@ stop() ->
     inets:stop().
 
 %% Retrieve the top 10 trends, only available under JSON atm.
+%% Seems to be a bug in the parsing, sometimes we get a mismatch
+%% causing an error.
 trends() ->
     case request_url(?SearchTrendsUrl) of
 	{ok,Body} ->
 	    Json = json_parser:dvm_parser(list_to_binary(Body)),
-	    Json;
+	    {ok,{struct,Reply},_} = Json,
+	    [H|T] = Reply,
+	    case H of
+		{_,Result} ->
+		    loop_json([],Result);
+		_ ->
+		    {error,'Can not retrieve trends.'}
+	    end;
 	{error,Error} ->
 	    {error,Error}
     end.
+
+%% Loop through our JSON result retrieving each result & turning
+%% into the desired format.
+loop_json(List,[H|T]) ->
+    {_,Json} = H,
+    [{_,Title},{_,Value}] = Json,
+    Data = [{binary_to_list(Title),binary_to_list(Value)}|List],
+    loop_json(Data,T);
+loop_json(List,[]) ->
+    list_to_tuple(List).
 
 %% Used to print out tweets to or from a specific user.
 tweets(User,Type) ->
