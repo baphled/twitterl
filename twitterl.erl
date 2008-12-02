@@ -22,7 +22,7 @@
 -module(twitterl).
 -author("Yomi (baphled) Akindayini").
 
-%% Will be useful for getting RSS feeds
+%% Will be useful for getting RSS feedsparsing JSON
 -import(json_parser).
 
 %-compile(export_all).
@@ -145,27 +145,27 @@ get_twitters(Url) ->
 	    {error,Error}
     end.
 
-%% Parses our XML sending each tweet to print_twitters
+%% Parses our XML sending each tweet to parse_twitters
 parse_xml(Xml) ->
     Twitters = xmerl_xpath:string("//item/title/text()", Xml),
     case 0 =:= length(Twitters) of
 	false ->
-	    print_twitters(lists:reverse(Twitters));
+	    parse_twitters(Twitters);
 	_ ->
 	    {error,"Unable to find twitters."}
     end.
     
 
 %% Loops through each of the XML twitter list and prints them out.
-print_twitters([Twit|Twitters]) ->
-    case Twit of
+parse_twitters([Tweet|Twitters]) ->
+    case Tweet of
 	{_,_,_,_,Title,_} ->
 	    io:format("~s~n", [[Title]]),
-	    print_twitters(Twitters);
+	    parse_twitters(lists:reverse(Twitters));
 	_ ->
 	    {error, "Unable to read twitter"}
     end;
-print_twitters([]) ->
+parse_twitters([]) ->
     ok.
 
 %% Checks to see if the user can actually log in.
@@ -182,8 +182,7 @@ auth_user(Login, Password) ->
 
 %% Make a request to an URL.
 request_url(Url) ->
-    check_response(http:request(get,{Url, headers(nil, nil)}, [], [])).
-
+    check_response(http:request(get, {Url, headers(nil, nil)}, [], [])).
 %% Make an authenticated request to the specified URL.
 request_url(Url, Login, Pass) ->
     check_response(http:request(get, {Url, headers(Login, Pass)}, [], [])).
