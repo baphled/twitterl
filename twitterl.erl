@@ -150,23 +150,24 @@ parse_xml(Xml) ->
     Twitters = xmerl_xpath:string("//item/title/text()", Xml),
     case 0 =:= length(Twitters) of
 	false ->
-	    parse_twitters(Twitters);
+	    parse_twitters([],Twitters);
 	_ ->
 	    {error,"Unable to find twitters."}
     end.
     
 
 %% Loops through each of the XML twitter list and prints them out.
-parse_twitters([Tweet|Twitters]) ->
+parse_twitters(Tweets,[Tweet|Twitters]) ->
     case Tweet of
 	{_,_,_,_,Title,_} ->
-	    io:format("~s~n", [[Title]]),
-	    parse_twitters(lists:reverse(Twitters));
+	    %io:format("~s~n", [[Title]]),
+	    MergedList = [Title| Tweets],
+	    parse_twitters(MergedList,Twitters);
 	_ ->
 	    {error, "Unable to read twitter"}
     end;
-parse_twitters([]) ->
-    ok.
+parse_twitters(List,[]) ->
+    {ok,List}.
 
 %% Checks to see if the user can actually log in.
 auth_user(Login, Password) ->
