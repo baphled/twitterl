@@ -88,14 +88,14 @@ loop_json(List,[]) ->
     list_to_tuple(List).
 
 %% Used to print out tweets to or from a specific user.
-tweets(User,Type) ->
-    case "from" =:= Type orelse "to" =:= Type of
+tweets(Type,User) ->
+    case from =:= Type orelse to =:= Type andalso is_atom(Type) of
 	false ->
 	    {error,"Wrong type"};
 	true ->
 	    case user_exists(User) of
 		{true,_} ->
-		    get_twitters(?SearchHashUrl++Type++"%3A"++User);
+		    get_twitters(?SearchHashUrl++atom_to_list(Type)++"%3A"++User);
 		{false,Error} ->
 		    {error,Error}
 	    end
@@ -178,7 +178,6 @@ parse_xml(Xml) ->
 	_ ->
 	    {error,"Unable to find twitters."}
     end.
-    
 
 %% Loops through each of the XML twitter list and prints them out.
 parse_twitters(Tweets,[Tweet|Twitters]) ->
