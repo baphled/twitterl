@@ -55,6 +55,7 @@ start() ->
 stop() ->
     inets:stop().
 
+			 
 %% Retrieve the top 10 trends, only available under JSON atm.
 %% Seems to be a bug in the parsing, sometimes we get a mismatch
 %% causing an error.
@@ -70,7 +71,6 @@ trends() ->
 			false ->
 			    loop_json([],Result);
 		        true ->
-			    %{error,'Unable to retrieve trends'}
 			    trends()
 		    end;
 		_ ->
