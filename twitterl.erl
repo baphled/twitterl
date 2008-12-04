@@ -85,7 +85,7 @@ trends() ->
 loop_json(List,[H|T]) ->
     {_,Json} = H,
     [{_,Title},{_,Value}] = Json,
-    Data = [{binary_to_list(Title),binary_to_list(Value)}|List],
+    Data = [[binary_to_list(Title),binary_to_list(Value)]|List],
     loop_json(Data,T);
 loop_json(List,[]) ->
     list_to_tuple(List).
@@ -114,12 +114,16 @@ term(Term) ->
 %% If an error message is found then we know that the user doesnt exist.
 %%
 user_exists(User) ->
-    {ok,Xml} = get_xml(?UserTimeUrl ++ User ++ ".rss"),
-    case xmerl_xpath:string("//hash/error/text()", Xml) of
-	[{xmlText, _, _, _, Error, text}] ->
-	    {false, User++": "++Error};
-	_ ->
-	    {true, User++": found!"}
+    case get_xml(?UserTimeUrl ++ User ++ ".rss") of
+	{error,Error} ->
+	    {error, Error};
+	{ok, Xml} ->
+	    case xmerl_xpath:string("//hash/error/text()", Xml) of
+		[{xmlText, _, _, _, Error, text}] ->
+		    {false, User++": "++Error};
+		_ ->
+		    {true, User++": found!"}
+	    end
     end.
 
 %% Retrieves a users followers.
