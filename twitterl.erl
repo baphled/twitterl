@@ -22,7 +22,7 @@
 -module(twitterl).
 -author("Yomi (baphled) Akindayini").
 -vsn(01).
--purpose("Twitter client to help me get used to Erlang").
+-purpose("A basic Twitter client.").
 
 %% Will be useful for getting RSS feedsparsing JSON
 -import(json_parser).
@@ -195,7 +195,6 @@ parse_xml(Xml) ->
 parse_twitters(Tweets,[Tweet|Twitters]) ->
     case Tweet of
 	{_,_,_,_,Title,_} ->
-	    %io:format("~s~n", [[Title]]),
 	    MergedList = [Title| Tweets],
 	    parse_twitters(MergedList,Twitters);
 	_ ->
