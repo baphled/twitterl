@@ -100,14 +100,19 @@ tweets(Type,User) ->
 		{true,_} ->
 		    get_twitters(?SearchHashUrl++atom_to_list(Type)++"%3A"++User);
 		{false,Error} ->
-		    {error,Error}
+		    {false,Error};
+		{error, Error} ->
+		    {error, Error}
 	    end
     end.
 
 %% Gets twitters with related to term.
 %%
-term(Term) ->
-    get_twitters(?SearchHashUrl++"%23"++Term).
+term(Term) -> 
+    case is_list(Term) of
+	true -> get_twitters(?SearchHashUrl++"%23"++Term);
+	_ -> {error, 'Term must be a list'}
+    end.
 
 %% Used to determine whether a twitters user exists or not.
 %% 
