@@ -9,7 +9,9 @@
 -module(route_twitterl).
 -import(twitterl).
 
+%-export([start/0,stop/0,get_trends/1]).
 -compile(export_all).
+
 start() ->
     spawn(route_twitterl, route_twitterl, []).
 
@@ -17,7 +19,7 @@ stop(Pid) ->
     Pid ! shutdown.
 
 get_trends(RoutePid) ->
-   RoutePid !{trends, RoutePid}.
+   {trends, RoutePid}.
 
 route_twitterl() ->
     receive
