@@ -16,6 +16,9 @@ start() ->
 stop(Pid) ->
     Pid ! shutdown.
 
+get_trends(RoutePid) ->
+   RoutePid !{trends, RoutePid}.
+
 route_twitterl() ->
     receive
 	{trends, Pid} ->
