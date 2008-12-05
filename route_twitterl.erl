@@ -8,7 +8,7 @@
 %%%-------------------------------------------------------------------
 -module(route_twitterl).
 -import(twitterl).
-%-export([start/0,stop/1]).
+
 -compile(export_all).
 start() ->
     spawn(route_twitterl, route_twitterl, []).
@@ -22,22 +22,22 @@ route_twitterl() ->
 	    %Data = twitterl:tweets(to, User),
 	    case twitterl:tweets(to, User) of
 		{ok, Results} ->
-		    Pid !io:format("~p~n", [Results]);
+		    %Pid !io:format("~p~n", [Results]);
+		    Pid !print_results(Results);
 		{error,Error} ->
 		    Pid !io:format("Error: ~p~n", [Error])
-	    end,
-	    %Pid !io:format("Got tweets~p~n", [Data]),
-	    route_twitterl();
+	    end;
 	ok ->
 	    route_twitterl();
 	shutdown ->
 	    io:format("Shutting down");
 	Oops ->
-	    io:format("Error occurred: ~p~n", [Oops])
+	    io:format("Error occurred: ~p~n", [Oops]),
+	    route_twitterl()
     end.
 
-print_results(Pid,[Result|Results]) ->
-    Pid !io:format("~p~n", [Result]),
-    print_results(Pid,Results);
-print_results(Pid,[]) ->
-    Pid !ok.
+print_results([Result|Results]) ->
+    io:format("~p~n", [Result]),
+    print_results(Results);
+print_results([]) ->
+    route_twitterl().
