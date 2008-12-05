@@ -13,7 +13,7 @@
 -compile(export_all).
 
 start() ->
-    Pid = spawn(twitterl_client, route_twitterl, []),
+    Pid = spawn(twitterl_client, handle_twitterl, []),
     erlang:register(?SERVER, Pid),
     Pid.
 
@@ -35,7 +35,7 @@ get_term(Term) ->
 public_timeline() ->
     ?SERVER !{public_timeline}.
 
-route_twitterl() ->
+handle_twitterl() ->
     receive
 	{trends} ->
 	    case twitterl:trends() of
@@ -44,7 +44,7 @@ route_twitterl() ->
 		    print_results(Data);
 		{_,Error}  ->
 		    io:format("Error: ~p~n", [Error]),
-		    route_twitterl()
+		    handle_twitterl()
 	    end;
 	{tweets, {Type,User}} ->
 	    case twitterl:tweets(Type, User) of
@@ -52,7 +52,7 @@ route_twitterl() ->
 		    print_results(Results);
 		{error,Error} ->
 		    io:format("Error: ~p~n", [Error]),
-		    route_twitterl()
+		    handle_twitterl()
 	    end;
 	{term, Term} ->
 	    case twitterl:term(Term) of
@@ -60,7 +60,7 @@ route_twitterl() ->
 		    print_results(Results);
 		{error,Error} ->
 		    io:format("Error: ~p~n", [Error]),
-		    route_twitterl()
+		    handle_twitterl()
 	    end;
 	{public_timeline} ->
 	    case twitterl:public_timeline() of
@@ -68,17 +68,17 @@ route_twitterl() ->
 		    print_results(Results);
 		{error, Error} ->
 		    io:format("Error: ~p~n", [Error]),
-		    route_twitterl()
+		    handle_twitterl()
 	    end;
 	shutdown ->
 	    io:format("Shutting down~n");
 	Oops ->
 	    io:format("Error occurred: ~p~n", [Oops]),
-	    route_twitterl()
+	    handle_twitterl()
     end.
 
 print_results([Result|Results]) ->
     io:format("~p~n", [Result]),
     print_results(Results);
 print_results([]) ->
-    route_twitterl().
+    handle_twitterl().
