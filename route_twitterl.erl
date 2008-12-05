@@ -32,8 +32,6 @@ route_twitterl() ->
 		{error,Error} ->
 		    Pid !io:format("Error: ~p~n", [Error])
 	    end;
-	ok ->
-	    route_twitterl();
 	shutdown ->
 	    io:format("Shutting down");
 	Oops ->
