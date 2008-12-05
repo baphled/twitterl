@@ -69,9 +69,10 @@ trends() ->
 		{_,Result} ->
 		    case is_binary(Result) of
 			false ->
-			    {ok, loop_json([],Result)};
+			    loop_json([],Result);
 		        true ->
-			    trends()
+			    %trends()
+			    Result
 		    end;
 		_ ->
 		    {error,'Can not retrieve trends.'}
