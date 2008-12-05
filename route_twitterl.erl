@@ -27,6 +27,9 @@ tweets_to(User, RoutePid) ->
 tweets_from(User, RoutePid) ->
     {tweets, RoutePid, {from, User}}.
 
+get_term(Term, RoutePid) ->
+    {term, RoutePid, Term}.
+
 route_twitterl() ->
     receive
 	{trends, Pid} ->
