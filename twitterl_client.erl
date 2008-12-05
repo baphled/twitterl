@@ -13,27 +13,42 @@
 -compile(export_all).
 
 start() ->
-    Pid = spawn(twitterl_client, handle_twitterl, []),
-    erlang:register(?SERVER, Pid),
-    Pid.
+    global:trans({?SERVER, ?SERVER},
+		 fun() ->
+			 case global:whereis_name(?SERVER) of
+			     undefined ->
+				 Pid = spawn(twitterl_client, handle_twitterl, []),
+				 global:register_name(?SERVER, Pid);
+			     _ ->
+				 ok
+			 end
+		 end).
 
 stop() ->
-    ?SERVER ! shutdown.
+    global:trans({?SERVER, ?SERVER},
+		 fun() ->
+			 case global:whereis_name(?SERVER) of
+			     undefined ->
+				 ok;
+			     _ ->
+				 global:send(?SERVER, shutdown)
+			 end
+		 end).
 
 get_trends() ->
-  ?SERVER !{trends}.
+  global:send(?SERVER,{trends}).
 
 tweets_to(User) ->
-    ?SERVER !{tweets,{to, User}}.
+    global:send(?SERVER, {tweets,{to, User}}).
 
 tweets_from(User) ->
-    ?SERVER !{tweets, {from, User}}.
+    global:send(?SERVER, {tweets, {from, User}}).
 
 get_term(Term) ->
-    ?SERVER !{term, Term}.
+    global:send(?SERVER, {term, Term}).
 
 public_timeline() ->
-    ?SERVER !{public_timeline}.
+    global:send(?SERVER, {public_timeline}).
 
 handle_twitterl() ->
     receive
