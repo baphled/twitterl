@@ -88,7 +88,7 @@ loop_json(List,[H|T]) ->
     Data = [[binary_to_list(Title),binary_to_list(Value)]|List],
     loop_json(Data,T);
 loop_json(List,[]) ->
-    list_to_tuple(List).
+    {ok,list_to_tuple(List)}.
 
 %% Used to print out tweets to or from a specific user.
 tweets(Type,User) ->
