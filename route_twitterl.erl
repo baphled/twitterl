@@ -31,6 +31,13 @@ route_twitterl() ->
 		{error,Error} ->
 		    Pid !io:format("Error: ~p~n", [Error])
 	    end;
+	{term, Pid, Term} ->
+	    case twitterl:term(Term) of
+		{ok, Results} ->
+		    Pid !print_results(Results);
+		{error,Error} ->
+		    Pid !io:format("Error: ~p~n", [Error])
+	    end;
 	shutdown ->
 	    io:format("Shutting down");
 	Oops ->
