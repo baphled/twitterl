@@ -8,19 +8,20 @@
 %%%-------------------------------------------------------------------
 -module(route_twitterl).
 -import(twitterl).
+-define(SERVER, route_twitterl).
 
-%-export([start/0,stop/0,get_trends/1]).
 -compile(export_all).
 
 start() ->
-    spawn(route_twitterl, route_twitterl, []).
+    Pid = spawn(route_twitterl, route_twitterl, []),
+    erlang:register(?SERVER, Pid),
+    Pid.
 
-stop(Pid) ->
-    Pid ! shutdown.
+stop() ->
+    ?SERVER ! shutdown.
 
-get_trends(RoutePid) ->
-  {trends, RoutePid}.
-   %RoutePid ! print_results(Result).
+get_trends() ->
+  ?SERVER !{trends}.
 
 tweets_to(User, RoutePid) ->
     {tweets, RoutePid,{to, User}}.
@@ -36,40 +37,40 @@ public_timeline(RoutePid) ->
 
 route_twitterl() ->
     receive
-	{trends, Pid} ->
+	{trends} ->
 	    case twitterl:trends() of
 		{ok, Result} ->
 		    Data = tuple_to_list(Result),
-		    Pid !print_results(Data);
+		    print_results(Data);
 		{_,Error}  ->
-		    Pid !io:format("Error: ~p~n", [Error]),
+		    io:format("Error: ~p~n", [Error]),
 		    route_twitterl()
 	    end;
 	    %route_twitterl;
-	{tweets, Pid, {Type,User}} ->
+	{tweets, ?SERVER, {Type,User}} ->
 	    case twitterl:tweets(Type, User) of
 		{ok, Results} ->
-		    Pid !print_results(Results);
+		    ?SERVER !print_results(Results);
 		{error,Error} ->
-		    Pid !io:format("Error: ~p~n", [Error]),
+		    ?SERVER !io:format("Error: ~p~n", [Error]),
 		    route_twitterl()
 	    end;
 	    %route_twitterl();
-	{term, Pid, Term} ->
+	{term, ?SERVER, Term} ->
 	    case twitterl:term(Term) of
 		{ok, Results} ->
-		    Pid !print_results(Results);
+		    ?SERVER !print_results(Results);
 		{error,Error} ->
-		    Pid !io:format("Error: ~p~n", [Error]),
+		    ?SERVER !io:format("Error: ~p~n", [Error]),
 		    route_twitterl()
 	    end;
 	    %route_twitterl();
-	{public_timeline, Pid} ->
+	{public_timeline, ?SERVER} ->
 	    case twitterl:public_timeline() of
 		{ok, Results} ->
-		    Pid !print_results(Results);
+		    ?SERVER !print_results(Results);
 		{error, Error} ->
-		    Pid !io:format("Error: ~p~n", [Error]),
+		    ?SERVER !io:format("Error: ~p~n", [Error]),
 		    route_twitterl()
 	    end;
 	    %route_twitterl();
