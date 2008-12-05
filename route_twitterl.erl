@@ -18,11 +18,16 @@ stop(Pid) ->
 
 route_twitterl() ->
     receive
+	{trends, Pid} ->
+	    case twitterl:trends() of
+		{ok, Result} ->
+		    Data = tuple_to_list(Result),
+		    Pid !print_results(Data)
+	    end;
 	{tweets_to, Pid, User} ->
 	    %Data = twitterl:tweets(to, User),
 	    case twitterl:tweets(to, User) of
 		{ok, Results} ->
-		    %Pid !io:format("~p~n", [Results]);
 		    Pid !print_results(Results);
 		{error,Error} ->
 		    Pid !io:format("Error: ~p~n", [Error])
