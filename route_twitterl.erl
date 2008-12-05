@@ -46,7 +46,6 @@ route_twitterl() ->
 		    io:format("Error: ~p~n", [Error]),
 		    route_twitterl()
 	    end;
-	    %route_twitterl;
 	{tweets, {Type,User}} ->
 	    case twitterl:tweets(Type, User) of
 		{ok, Results} ->
@@ -55,7 +54,6 @@ route_twitterl() ->
 		    io:format("Error: ~p~n", [Error]),
 		    route_twitterl()
 	    end;
-	    %route_twitterl();
 	{term, Term} ->
 	    case twitterl:term(Term) of
 		{ok, Results} ->
@@ -64,7 +62,6 @@ route_twitterl() ->
 		    io:format("Error: ~p~n", [Error]),
 		    route_twitterl()
 	    end;
-	    %route_twitterl();
 	{public_timeline} ->
 	    case twitterl:public_timeline() of
 		{ok, Results} ->
@@ -73,7 +70,6 @@ route_twitterl() ->
 		    io:format("Error: ~p~n", [Error]),
 		    route_twitterl()
 	    end;
-	    %route_twitterl();
 	shutdown ->
 	    io:format("Shutting down~n");
 	Oops ->
