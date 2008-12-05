@@ -19,7 +19,8 @@ stop(Pid) ->
     Pid ! shutdown.
 
 get_trends(RoutePid) ->
-   {trends, RoutePid}.
+  {trends, RoutePid}.
+   %RoutePid ! print_results(Result).
 
 tweets_to(User, RoutePid) ->
     {tweets, RoutePid,{to, User}}.
@@ -29,6 +30,9 @@ tweets_from(User, RoutePid) ->
 
 get_term(Term, RoutePid) ->
     {term, RoutePid, Term}.
+
+public_timeline(RoutePid) ->
+    {public_timeline, RoutePid}.
 
 route_twitterl() ->
     receive
