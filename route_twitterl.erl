@@ -21,6 +21,12 @@ stop(Pid) ->
 get_trends(RoutePid) ->
    {trends, RoutePid}.
 
+tweets_to(User, RoutePid) ->
+    {tweets, RoutePid,{to, User}}.
+
+tweets_from(User, RoutePid) ->
+    {tweets, RoutePid, {from, User}}.
+
 route_twitterl() ->
     receive
 	{trends, Pid} ->
