@@ -23,17 +23,17 @@ stop() ->
 get_trends() ->
   ?SERVER !{trends}.
 
-tweets_to(User, RoutePid) ->
-    {tweets, RoutePid,{to, User}}.
+tweets_to(User) ->
+    ?SERVER !{tweets,{to, User}}.
 
-tweets_from(User, RoutePid) ->
-    {tweets, RoutePid, {from, User}}.
+tweets_from(User) ->
+    ?SERVER !{tweets, {from, User}}.
 
-get_term(Term, RoutePid) ->
-    {term, RoutePid, Term}.
+get_term(Term) ->
+    ?SERVER !{term, Term}.
 
-public_timeline(RoutePid) ->
-    {public_timeline, RoutePid}.
+public_timeline() ->
+    ?SERVER !{public_timeline}.
 
 route_twitterl() ->
     receive
@@ -47,30 +47,30 @@ route_twitterl() ->
 		    route_twitterl()
 	    end;
 	    %route_twitterl;
-	{tweets, ?SERVER, {Type,User}} ->
+	{tweets, {Type,User}} ->
 	    case twitterl:tweets(Type, User) of
 		{ok, Results} ->
-		    ?SERVER !print_results(Results);
+		    print_results(Results);
 		{error,Error} ->
-		    ?SERVER !io:format("Error: ~p~n", [Error]),
+		    io:format("Error: ~p~n", [Error]),
 		    route_twitterl()
 	    end;
 	    %route_twitterl();
-	{term, ?SERVER, Term} ->
+	{term, Term} ->
 	    case twitterl:term(Term) of
 		{ok, Results} ->
-		    ?SERVER !print_results(Results);
+		    print_results(Results);
 		{error,Error} ->
-		    ?SERVER !io:format("Error: ~p~n", [Error]),
+		    io:format("Error: ~p~n", [Error]),
 		    route_twitterl()
 	    end;
 	    %route_twitterl();
-	{public_timeline, ?SERVER} ->
+	{public_timeline} ->
 	    case twitterl:public_timeline() of
 		{ok, Results} ->
-		    ?SERVER !print_results(Results);
+		    print_results(Results);
 		{error, Error} ->
-		    ?SERVER !io:format("Error: ~p~n", [Error]),
+		    io:format("Error: ~p~n", [Error]),
 		    route_twitterl()
 	    end;
 	    %route_twitterl();
