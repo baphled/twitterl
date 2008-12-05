@@ -69,7 +69,7 @@ trends() ->
 		{_,Result} ->
 		    case is_binary(Result) of
 			false ->
-			    loop_json([],Result);
+			    {ok, loop_json([],Result)};
 		        true ->
 			    trends()
 		    end;
