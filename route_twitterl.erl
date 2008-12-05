@@ -24,9 +24,8 @@ route_twitterl() ->
 		    Data = tuple_to_list(Result),
 		    Pid !print_results(Data)
 	    end;
-	{tweets_to, Pid, User} ->
-	    %Data = twitterl:tweets(to, User),
-	    case twitterl:tweets(to, User) of
+	{tweets, Pid, {Type,User}} ->
+	    case twitterl:tweets(Type, User) of
 		{ok, Results} ->
 		    Pid !print_results(Results);
 		{error,Error} ->
