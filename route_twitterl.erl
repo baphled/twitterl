@@ -56,7 +56,7 @@ route_twitterl() ->
 	    end;
 	    %route_twitterl();
 	shutdown ->
-	    io:format("Shutting down");
+	    io:format("Shutting down~n");
 	Oops ->
 	    io:format("Error occurred: ~p~n", [Oops]),
 	    route_twitterl()
