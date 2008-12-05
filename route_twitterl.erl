@@ -23,21 +23,32 @@ route_twitterl() ->
 		{ok, Result} ->
 		    Data = tuple_to_list(Result),
 		    Pid !print_results(Data)
-	    end;
+	    end,
+	    route_twitterl;
 	{tweets, Pid, {Type,User}} ->
 	    case twitterl:tweets(Type, User) of
 		{ok, Results} ->
 		    Pid !print_results(Results);
 		{error,Error} ->
 		    Pid !io:format("Error: ~p~n", [Error])
-	    end;
+	    end,
+	    route_twitterl();
 	{term, Pid, Term} ->
 	    case twitterl:term(Term) of
 		{ok, Results} ->
 		    Pid !print_results(Results);
 		{error,Error} ->
 		    Pid !io:format("Error: ~p~n", [Error])
-	    end;
+	    end,
+	    route_twitterl();
+	{public_timeline, Pid} ->
+	    case twitterl:public_timeline() of
+		{ok, Results} ->
+		    Pid !print_results(Results);
+		{error, Error} ->
+		    Pid !io:format("Error: ~p~n", [Error])
+	    end,
+	    route_twitterl();
 	shutdown ->
 	    io:format("Shutting down");
 	Oops ->
