@@ -99,15 +99,19 @@ session_from_client(State, Client) ->
         false -> {error, invalid_client};
         true -> gb_trees:get(Client, State#twitterl.sessions)
     end.
-
-status_trends(_Login, _Password, _Args) ->
+%% The following methods stand alone as part of the old system
+%% they only return the actual description with no other data.
+trends(_Login, _Password, _Args) ->
     twitterl_interface:trends().
-status_tweets(Login, _Password, Args) ->
+tweets(Login, _Password, Args) ->
     twitterl_interface:tweets(Args,Login).
-status_term(_Login, _Password, Args) ->
+term(_Login, _Password, Args) ->
     twitterl_interface:term(Args).
 public_timeline(_Login, _Password, _Args) ->
     twitterl_interface:public_timeline().
+
+%% These methods will return more detailed information
+%% including who is friends with who & retrieving conversations.
 user_followers(Login, Password, _Args) ->
     twitterl_interface:followers(Login, Password).
 user_timeline(Login, _Password, _Args) ->
