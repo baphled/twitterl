@@ -48,13 +48,6 @@
 -define(SearchHashUrl, ?SearchUrl"/search.rss?q=").
 -define(SearchTrendsUrl, ?SearchUrl"/trends.json").
 -define(VerifyUrl, ?TwitUrl"/account/verify_credentials.xml").
-
-start() ->
-    inets:start().
-
-stop() ->
-    inets:stop().
-
 			 
 %% Retrieve the top 10 trends, only available under JSON atm.
 %% Seems to be a bug in the parsing, sometimes we get a mismatch
@@ -71,8 +64,8 @@ trends() ->
 			false ->
 			    {ok,loop_json([],Result)};
 		        true ->
-			    %trends()
-			    {error,Result}
+			    trends()
+			    %{error,Result}
 		    end;
 		_ ->
 		    {error,'Can not retrieve trends.'}
