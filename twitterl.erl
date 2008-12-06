@@ -72,7 +72,7 @@ handle_call({Client, Method, Args}, _From, State) ->
     Response = case session_from_client(State, Client) of
         {error, Reason} -> {error, Reason};
         {Login, Password} ->
-            try apply(twitterl_server, Method, [Login, Password, Args])
+            try apply(twitterl, Method, [Login, Password, Args])
             catch
                 Err:Msg ->
                     io:format("error: ~p:~p~n", [Err, Msg]),
