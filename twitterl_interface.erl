@@ -179,7 +179,8 @@ parse_user(Xml) ->
     [ #xmlText{value=Id} ] = xmerl_xpath:string("//user/id/text()", Xml),
     [ #xmlText{value=Name} ] = xmerl_xpath:string("//user/name/text()", Xml),
     [ #xmlText{value=ScreenName} ] = xmerl_xpath:string("//user/screen_name/text()", Xml),
-    [ #xmlText{value=Location} ] = xmerl_xpath:string("//user/location/text()", Xml)
+    [ #xmlText{value=Location} ] = xmerl_xpath:string("//user/location/text()", Xml),
+    [ #xmlText{value=Description} ] = xmerl_xpath:string("//user/description/text()", Xml),
     {Id,Name,ScreenName,Location}.
 
 %% Parses our XML sending each tweet to parse_twitters
