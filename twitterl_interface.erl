@@ -27,7 +27,8 @@
 %% Will be useful for getting RSS feedsparsing JSON
 -import(json_parser).
 
-%% Search methods
+-record(tweet, {guid, title, description, date, link}).
+% Search methods
 -export([auth_user/2,trends/0,tweets/2,term/1]).
 %% Twitter specific methods
 -export([user_timeline/1,public_timeline/0,followers/2]).
@@ -42,7 +43,7 @@
 -define(SearchUrl, "http://search.twitter.com").
 -define(PubTimeUrl, ?TwitUrl"/statuses/public_timeline.rss").
 -define(UserTimeUrl, ?TwitUrl"/statuses/user_timeline/").
--define(FollowersUrl, ?TwitUrl"/statuses/followers.rss").
+-define(FollowersUrl, ?TwitUrl"/statuses/followers.xml").
 -define(SearchHashUrl, ?SearchUrl"/search.rss?q=").
 -define(SearchTrendsUrl, ?SearchUrl"/trends.json").
 -define(VerifyUrl, ?TwitUrl"/account/verify_credentials.xml").
@@ -127,7 +128,12 @@ user_exists(User) ->
 %% Needs to be worked on
 %%
 followers(User, Pass) ->
-    get_xml(?FollowersUrl, User, Pass).
+    case get_xml(?FollowersUrl, User, Pass) of
+	{ok,Xml} ->
+	    Xml;
+	{error,Error} ->
+	    {error,Error}
+    end.
 
 %% Get a specific user's twitters.
 %% Don't really need any more, seeing as tweets will do the same thing.
@@ -157,14 +163,17 @@ get_xml(Url,Login,Password) ->
 get_twitters(Url) ->
     case get_xml(Url,nil, nil) of
 	{ok,Xml} ->
-	    parse_xml(Xml);
+	    parse_xml(Xml,"//item/title/text()");
 	{error,Error} ->
 	    {error,Error}
     end.
-
+parse_status(Xml) ->
+    Statuses = xmerl_xpath:string("//status/text()", Xml),
+    parse_twitters([], Statuses).
+    
 %% Parses our XML sending each tweet to parse_twitters
-parse_xml(Xml) ->
-    Twitters = xmerl_xpath:string("//item/title/text()", Xml),
+parse_xml(Xml,XPath) ->
+    Twitters = xmerl_xpath:string(XPath, Xml),
     case 0 =:= length(Twitters) of
 	false ->
 	    parse_twitters([],Twitters);
