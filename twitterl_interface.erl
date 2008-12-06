@@ -176,8 +176,10 @@ parse_users(Xml) ->
 
 parse_user(Xml) ->
     %id = format_text(Xml,"/user/id/text()","").
+    [ #xmlText{value=Id} ] = xmerl_xpath:string("//user/id/text()", Xml),
     [ #xmlText{value=Name} ] = xmerl_xpath:string("//user/name/text()", Xml),
-    Name.
+    [ #xmlText{value=ScreenName} ] = xmerl_xpath:string("//user/screen_name/text()", Xml),
+    {Id,Name,ScreenName}.
 
 %% Parses our XML sending each tweet to parse_twitters
 parse_xml(Xml,XPath) ->
@@ -243,15 +245,3 @@ headers(User, Pass) ->
     Auth = base64:encode(User ++ ":" ++ Pass),
     Basic = lists:flatten(io_lib:fwrite("Basic ~s", [Auth])),
     [{"User-Agent", ?App}, {"Authorization", Basic}].
-
-%% @private
-format_text(_, [], Default) -> Default;
-format_text(Xml, [Xpath | Tail], Default) ->
-    Result = lists:foldr(
-        fun(#xmlText{value = Val}, Acc) -> lists:append(Val, Acc);
-           (_, Acc) -> Acc
-        end,
-        Default,
-        xmerl_xpath:string(Xpath, Xml)
-    ),
-    format_text(Xml, Tail, Result).
