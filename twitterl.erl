@@ -41,7 +41,7 @@ remove_session(Login) ->
     gen_server:call({global, ?MODULE}, {remove_session, Login}, infinity).
 
 call(Client,Method) ->
-    twitterl_server:call(Client, Method, []).
+    twitterl:call(Client, Method, []).
 call(Client, Method, Args) ->
     gen_server:call({global, ?MODULE}, {Client, Method, Args}, infinity).
 
