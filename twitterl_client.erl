@@ -36,7 +36,9 @@ stop() ->
 		 end).
 
 get_trends() ->
-  global:send(?SERVER,{trends}).
+    %global:send(?SERVER,{trends}).
+    {trends}.
+    
 
 tweets_to(User) ->
     global:send(?SERVER, {tweets,{to, User}}).

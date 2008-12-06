@@ -19,7 +19,7 @@
 %%%
 %%% Created : 29 Nov 2008 by Yomi Akindayini <yomi@boodah.net>
 %%%-------------------------------------------------------------------
--module(twitterl).
+-module(twitterl_interface).
 -author("Yomi (baphled) Akindayini").
 -vsn(01).
 -purpose("A basic Twitter client.").
@@ -27,8 +27,6 @@
 %% Will be useful for getting RSS feedsparsing JSON
 -import(json_parser).
 
-%-compile(export_all).
--export([start/0,stop/0]).
 %% Search methods
 -export([auth_user/2,trends/0,tweets/2,term/1]).
 %% Twitter specific methods
@@ -36,7 +34,7 @@
 
 -include_lib("xmerl/include/xmerl.hrl").
 
--define(App, "TwitterlClient/0.1").
+-define(App, "TwiClient/0.1").
 
 %% Urls used to make our queries, as our api is twitter centric
 %% it makes sense to define them constant initially.
@@ -57,7 +55,7 @@ trends() ->
 	{ok,Body} ->
 	    Json = json_parser:dvm_parser(list_to_binary(Body)),
 	    {ok,{struct,Reply},_} = Json,
-	    [H|T] = Reply,
+	    [H|_T] = Reply,
 	    case H of
 		{_,Result} ->
 		    case is_binary(Result) of
