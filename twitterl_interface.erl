@@ -63,7 +63,6 @@ trends() ->
 			    {ok,loop_json([],Result)};
 		        true ->
 			    trends()
-			    %{error,Result}
 		    end;
 		_ ->
 		    {error,'Can not retrieve trends.'}
@@ -111,7 +110,7 @@ term(Term) ->
 %% If an error message is found then we know that the user doesnt exist.
 %%
 user_exists(User) ->
-    case get_xml(?UserTimeUrl ++ User ++ ".rss") of
+    case get_xml(?UserTimeUrl ++ User ++ ".rss", nil, nil) of
 	{error,Error} ->
 	    {error, Error};
 	{ok, Xml} ->
@@ -128,7 +127,8 @@ user_exists(User) ->
 %% Needs to be worked on
 %%
 followers(User, Pass) ->
-	    get_xml(?FollowersUrl, User, Pass).
+    get_xml(?FollowersUrl, User, Pass).
+
 %% Get a specific user's twitters.
 %% Don't really need any more, seeing as tweets will do the same thing.
 user_timeline(User) ->
@@ -142,10 +142,9 @@ user_timeline(User) ->
 %% Retrieve the public timeline.
 public_timeline() ->
     get_twitters(?PubTimeUrl).
-
+get_xml(Url,nil,nil) ->
+    get_xml(Url,nil,nil);
 %% Get the actual XML response.
-get_xml(Url) ->
-    get_xml(Url,nil,nil).
 get_xml(Url,Login,Password) ->
     case request_url(Url,Login,Password) of
 	    {ok, Body} ->
@@ -156,7 +155,7 @@ get_xml(Url,Login,Password) ->
     end.
 %% Get the the twitters in XML format.
 get_twitters(Url) ->
-    case get_xml(Url) of
+    case get_xml(Url,nil, nil) of
 	{ok,Xml} ->
 	    parse_xml(Xml);
 	{error,Error} ->
