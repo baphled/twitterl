@@ -105,3 +105,6 @@ status_trends(_Login, _Password, _Args) ->
 
 status_tweets(Login, _Password, Args) ->
     twitterl_interface:tweets(Args,Login).
+
+user_followers(Login, Password, _Args) ->
+    twitterl_interface:followers(Login, Password).

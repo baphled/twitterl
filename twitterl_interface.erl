@@ -34,7 +34,7 @@
 
 -include_lib("xmerl/include/xmerl.hrl").
 
--define(App, "TwiClient/0.1").
+-define(App, "TwitterlClient/0.1").
 
 %% Urls used to make our queries, as our api is twitter centric
 %% it makes sense to define them constant initially.
