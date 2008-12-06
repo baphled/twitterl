@@ -107,6 +107,8 @@ status_tweets(Login, _Password, Args) ->
     twitterl_interface:tweets(Args,Login).
 status_term(_Login, _Password, Args) ->
     twitterl_interface:term(Args).
+status_timeline(_Login, _Password, _Args) ->
+    twitterl_interface:public_timeline().
 user_followers(Login, Password, _Args) ->
     twitterl_interface:followers(Login, Password).
 user_timeline(Login, _Password, _Args) ->
