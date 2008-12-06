@@ -10,13 +10,13 @@
 -behaviour(gen_server).
 -import(twitterl_interface).
 %% API
-%-export([start/0]).
+-export([start/0,call/2,add_session/2,remove_session/1]).
 -compile(export_all).
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--record(twitterl, {sessions, base_url, delay, lastcall}).
+-record(twitterl, {sessions, delay, lastcall}).
 
 start() ->
     inets:start(),
@@ -105,6 +105,9 @@ status_trends(_Login, _Password, _Args) ->
 
 status_tweets(Login, _Password, Args) ->
     twitterl_interface:tweets(Args,Login).
-
+status_term(_Login, _Password, Args) ->
+    twitterl_interface:term(Args).
 user_followers(Login, Password, _Args) ->
     twitterl_interface:followers(Login, Password).
+user_timeline(Login, _Password, _Args) ->
+    twitterl_interface:user_timeline(Login).
