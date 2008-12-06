@@ -28,6 +28,9 @@
 -import(json_parser).
 
 -record(tweet, {guid, title, description, date, link}).
+-record(user, {id, name, screen_name, location, description, profile_image_url, url, protected, followers_count}).
+-record(status, {created_at,id,text,source, truncated,in_reply_to_status_id, in_reply_to_user_id, favorited}).
+
 % Search methods
 -export([auth_user/2,trends/0,tweets/2,term/1]).
 %% Twitter specific methods
@@ -130,7 +133,7 @@ user_exists(User) ->
 followers(User, Pass) ->
     case get_xml(?FollowersUrl, User, Pass) of
 	{ok,Xml} ->
-	    Xml;
+	    parse_users(Xml);
 	{error,Error} ->
 	    {error,Error}
     end.
@@ -167,10 +170,15 @@ get_twitters(Url) ->
 	{error,Error} ->
 	    {error,Error}
     end.
-parse_status(Xml) ->
-    Statuses = xmerl_xpath:string("//status/text()", Xml),
-    parse_twitters([], Statuses).
-    
+
+parse_users(Xml) ->
+    [parse_user(User) || User <- xmerl_xpath:string("/users/user",Xml)].
+
+parse_user(Xml) ->
+    %id = format_text(Xml,"/user/id/text()","").
+    [ #xmlText{value=Name} ] = xmerl_xpath:string("//user/name/text()", Xml),
+    Name.
+
 %% Parses our XML sending each tweet to parse_twitters
 parse_xml(Xml,XPath) ->
     Twitters = xmerl_xpath:string(XPath, Xml),
@@ -235,3 +243,15 @@ headers(User, Pass) ->
     Auth = base64:encode(User ++ ":" ++ Pass),
     Basic = lists:flatten(io_lib:fwrite("Basic ~s", [Auth])),
     [{"User-Agent", ?App}, {"Authorization", Basic}].
+
+%% @private
+format_text(_, [], Default) -> Default;
+format_text(Xml, [Xpath | Tail], Default) ->
+    Result = lists:foldr(
+        fun(#xmlText{value = Val}, Acc) -> lists:append(Val, Acc);
+           (_, Acc) -> Acc
+        end,
+        Default,
+        xmerl_xpath:string(Xpath, Xml)
+    ),
+    format_text(Xml, Tail, Result).
