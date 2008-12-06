@@ -102,3 +102,6 @@ session_from_client(State, Client) ->
 
 status_trends(_Login, _Password, _Args) ->
     twitterl_interface:trends().
+
+status_tweets(Login, _Password, Args) ->
+    twitterl_interface:tweets(Args,Login).
