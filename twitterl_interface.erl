@@ -51,7 +51,7 @@
 %% Seems to be a bug in the parsing, sometimes we get a mismatch
 %% causing an error.
 trends() ->
-    case request_url(?SearchTrendsUrl) of
+    case request_url(?SearchTrendsUrl, nil, nil) of
 	{ok,Body} ->
 	    Json = json_parser:dvm_parser(list_to_binary(Body)),
 	    {ok,{struct,Reply},_} = Json,
@@ -128,18 +128,7 @@ user_exists(User) ->
 %% Needs to be worked on
 %%
 followers(User, Pass) ->
-    case auth_user(User, Pass) of
-	true ->
-	    case request_url(?FollowersUrl, User, Pass) of
-		{ok,Body} ->
-		    Body;
-		{error,Error} ->
-		    {error,Error}
-	    end;
-	false ->
-	    {error}
-    end.
-
+	    get_xml(?FollowersUrl, User, Pass).
 %% Get a specific user's twitters.
 %% Don't really need any more, seeing as tweets will do the same thing.
 user_timeline(User) ->
@@ -156,14 +145,15 @@ public_timeline() ->
 
 %% Get the actual XML response.
 get_xml(Url) ->
-    case request_url(Url) of
-	{ok,Body} ->
-	    {Xml, _Rest} = xmerl_scan:string(Body),
-	    {ok,Xml};
-	{error,Error} ->
-	    {error,Error}
+    get_xml(Url,nil,nil).
+get_xml(Url,Login,Password) ->
+    case request_url(Url,Login,Password) of
+	    {ok, Body} ->
+	       {Xml, _Rest} = xmerl_scan:string(Body),
+	       {ok, Xml};
+	    {error, Error} ->
+	       {error, Error}
     end.
-
 %% Get the the twitters in XML format.
 get_twitters(Url) ->
     case get_xml(Url) of
@@ -208,8 +198,8 @@ auth_user(Login, Password) ->
     end.
 
 %% Make a request to an URL.
-request_url(Url) ->
-    check_response(http:request(get, {Url, headers(nil, nil)}, [], [])).
+request_url(Url,nil,nil) ->
+    check_response(http:request(get, {Url, headers(nil, nil)}, [], []));
 %% Make an authenticated request to the specified URL.
 request_url(Url, Login, Pass) ->
     check_response(http:request(get, {Url, headers(Login, Pass)}, [], [])).
