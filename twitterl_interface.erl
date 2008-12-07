@@ -27,7 +27,9 @@
 %% Will be useful for getting RSS feedsparsing JSON
 -import(json_parser).
 
+-record(user, {id, name, screen_name, location, description, profile_image_url, url, protected, followers_count}).
 
+-export([status_followers/2]).
 % Search methods
 -export([auth_user/2,trends/0,tweets/2,term/1]).
 %% Twitter specific methods
@@ -123,6 +125,7 @@ user_exists(User) ->
 	    end
     end.
 
+
 %% Get a specific user's twitters.
 %% Don't really need any more, seeing as tweets will do the same thing.
 user_timeline(User) ->
@@ -136,6 +139,20 @@ user_timeline(User) ->
 %% Retrieve the public timeline.
 public_timeline() ->
     get_twitters(?PubTimeUrl).
+
+%% Methods to retrieve user based information.
+
+%% Retrieves a users followers.
+%%
+%%
+status_followers(User, Pass) ->
+    case get_xml(?FollowersUrl, User, Pass) of
+	{ok,Xml} ->
+	    parse_users(Xml);
+	{error,Error} ->
+	    {error,Error}
+    end.
+
 get_xml(Url) ->
     case request_url(Url,nil,nil) of
 	    {ok, Body} ->
@@ -144,6 +161,7 @@ get_xml(Url) ->
 	    {error, Error} ->
 	       {error, Error}
     end.
+
 %% Get the actual XML response.
 get_xml(Url,Login,Password) ->
     case request_url(Url,Login,Password) of
@@ -196,6 +214,30 @@ auth_user(Login, Password) ->
 	 {error,Error} ->
 	    {error,Error}
     end.
+
+
+parse_users(Xml) ->
+    [parse_user(User) || User <- xmerl_xpath:string("/users/user",Xml)].
+
+parse_user(Xml) ->
+    User = #user {
+      id = format_text(Xml,["/user/id/text()"], ""),
+      name = format_text(Xml, ["/user/name/text()"], ""),
+      screen_name = format_text(Xml, ["/user/screen_name/text()"], "")
+      },
+    User.
+
+%% @private
+format_text(_, [], Result) -> Result;
+format_text(Xml, [Xpath | Tail], Result) ->
+    Results = lists:foldr(
+        fun(#xmlText{value = Value}, Acc) -> lists:append(Value, Acc);
+           (_, Acc) -> Acc
+        end,
+        Result,
+        xmerl_xpath:string(Xpath, Xml)
+    ),
+    format_text(Xml, Tail, Results).
 
 %% Make a request to an URL.
 request_url(Url,nil,nil) ->
