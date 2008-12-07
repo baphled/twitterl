@@ -101,7 +101,7 @@ tweets(Type,User) ->
 		    {false,Error};
 		{error, Error} ->
 		    {error, Error}
-	    end
+	    end.
     end.
 
 %% Gets twitters with related to term.
