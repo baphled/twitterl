@@ -32,7 +32,7 @@
 -record(tweet, {title, pubDate, link}).
 -record(user, {id, name, screen_name, location, description, profile_image_url, url, protected, followers_count, status}).
 
--export([handle_status/3]).
+-export([handle_status/4]).
 %-export([status_followers/2,status_friends/2]) .
 % Search methods
 -export([auth_user/2,trends/0,tweets/2,term/1]).
@@ -163,7 +163,9 @@ auth_user(Login, Password) ->
 
 %%% Handles each of our user & status requests
 %@private
-handle_status(Type,User,Pass) ->
+handle_status(Type,User,Pass,nil) ->
+    handle_status(Type,User,Pass,nil);
+handle_status(Type,User,Pass,Args) ->
     case Type of
 	followers ->
 	    get_user("followers.xml",User,Pass);
@@ -173,6 +175,11 @@ handle_status(Type,User,Pass) ->
 	    get_status("user_timeline.xml",User,Pass);
 	public_timeline ->
 	    get_status("public_timeline.xml",User,Pass);
+	show ->
+	    case is_list(Args) of
+		true -> get_status("show.xml?id="++Args, User,Pass);
+		_ -> {error, {Type, Args}}
+	    end;
 	_ ->
 	    {error,"Invalid status type"}
     end.
