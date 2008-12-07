@@ -75,7 +75,7 @@ handle_call({Client, Method, Args}, _From, State) ->
             try apply(twitterl, Method, [Login, Password, Args])
             catch
                 Err:Msg ->
-                    io:format("error: ~p:~p~n", [Err, Msg]),
+                    io:format("~p:~p~n", [Err, Msg]),
                     {error, unsupported_method}
             end;
         _ -> {error, unknown}
