@@ -58,7 +58,10 @@
 %% Seems to be a bug in the parsing, sometimes we get a mismatch
 %% causing an error.
 trends() ->
-    case request_url(?SearchTrendsUrl, nil, nil) of
+    parse_json(?SearchTrendsUrl).
+
+parse_json(Url) ->
+    case request_url(Url, nil, nil) of
 	{ok,Body} ->
 	    Json = json_parser:dvm_parser(list_to_binary(Body)),
 	    {ok,{struct,Reply},_} = Json,
@@ -202,14 +205,6 @@ get_xml(Url,Login,Password) ->
 	    {error, Error}
     end.
 
-get_body(Html) ->
-    case xmerl_scan:string(Html) of
-	{Xml, _Rest} ->
-	     Xml;
-	_ ->
-	    {error,"Unable to parse XML"}
-    end.
-
 %% Get the the twitters in XML format.
 get_twitters(Url) ->
     case get_xml(Url,nil, nil) of
@@ -217,6 +212,14 @@ get_twitters(Url) ->
 	    parse_items(Xml);
 	{error,Error} ->
 	    {error,Error}
+    end.
+
+get_body(Html) ->
+    case xmerl_scan:string(Html) of
+	{Xml, _Rest} ->
+	     Xml;
+	_ ->
+	    {error,"Unable to parse XML"}
     end.
 
 %% Parses our XML
