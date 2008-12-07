@@ -101,7 +101,7 @@ tweets(Type,User) ->
 		    {false,Error};
 		{error, Error} ->
 		    {error, Error}
-	    end.
+	    end
     end.
 
 %% Gets twitters with related to term.
@@ -194,8 +194,7 @@ get_status(Url,User,Pass) ->
 get_xml(Url) ->
     case request_url(Url,nil,nil) of
 	    {ok, Body} ->
-	       {Xml, _Rest} = xmerl_scan:string(Body),
-	       {ok, Xml};
+	       {ok,get_body(Body)};
 	    {error, Error} ->
 	       {error, Error}
     end.
@@ -203,12 +202,20 @@ get_xml(Url) ->
 %% Get the actual XML response.
 get_xml(Url,Login,Password) ->
     case request_url(Url,Login,Password) of
-	    {ok, Body} ->
-	       {Xml, _Rest} = xmerl_scan:string(Body),
-	       {ok, Xml};
-	    {error, Error} ->
-	       {error, Error}
+	{ok, Body} ->
+	    {ok, get_body(Body)}; 
+	{error, Error} ->
+	    {error, Error}
     end.
+
+get_body(Html) ->
+    case xmerl_scan:string(Html) of
+	{Xml, _Rest} ->
+	     Xml;
+	_ ->
+	    {error,"Unable to parse XML"}
+    end.
+
 %% Get the the twitters in XML format.
 get_twitters(Url) ->
     case get_xml(Url,nil, nil) of
@@ -243,7 +250,7 @@ parse_status(Node) when is_list(Node)->
       in_reply_to_user_id = format_text(Node, ["/status/in_reply_to_user_id/text()"],""),
       favorited = format_text(Node, ["/status/favourited/text()"],"")
     },
-    case xmerl_xpath:string("/status/user", Result) of
+    case xmerl_xpath:string("/status/user", Node) of
         [] ->  Result;
         [Status] -> Result#status{ user = parse_user(Status) }
     end.
