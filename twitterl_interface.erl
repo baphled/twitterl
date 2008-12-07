@@ -192,13 +192,7 @@ get_status(Url,User,Pass) ->
 
 %% Parsing functionality
 get_xml(Url) ->
-    case request_url(Url,nil,nil) of
-	    {ok, Body} ->
-	       {ok,get_body(Body)};
-	    {error, Error} ->
-	       {error, Error}
-    end.
-
+    get_xml(Url, nil, nil).
 %% Get the actual XML response.
 get_xml(Url,Login,Password) ->
     case request_url(Url,Login,Password) of
