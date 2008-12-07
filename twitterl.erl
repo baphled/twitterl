@@ -9,6 +9,11 @@
 
 -behaviour(gen_server).
 -import(twitterl_interface).
+
+-include_lib("xmerl/include/xmerl.hrl").
+
+-record(user, {id, name, screen_name, location, description, profile_image_url, url, protected, followers_count}).
+
 %% API
 -export([start/0,call/2,add_session/2,remove_session/1]).
 -compile(export_all).
@@ -113,6 +118,42 @@ public_timeline(_Login, _Password, _Args) ->
 %% These methods will return more detailed information
 %% including who is friends with who & retrieving conversations.
 user_followers(Login, Password, _Args) ->
-    twitterl_interface:followers(Login, Password).
+    followers(Login, Password).
 user_timeline(Login, _Password, _Args) ->
     twitterl_interface:user_timeline(Login).
+
+
+
+%% Retrieves a users followers.
+%%
+%%
+followers(User, Pass) ->
+    case twitterl_interface:get_xml("http://twitter.com/statuses/followers.xml", User, Pass) of
+	{ok,Xml} ->
+	    parse_users(Xml);
+	{error,Error} ->
+	    {error,Error}
+    end.
+
+parse_users(Xml) ->
+    [parse_user(User) || User <- xmerl_xpath:string("/users/user",Xml)].
+
+parse_user(Xml) ->
+    User = #user {
+      id = format_text(Xml,["/user/id/text()"], ""),
+      name = format_text(Xml, ["/user/name/text()"], ""),
+      screen_name = format_text(Xml, ["/user/screen_name/text()"], "")
+      },
+    User.
+
+%% @private
+format_text(_, [], Result) -> Result;
+format_text(Xml, [Xpath | Tail], Result) ->
+    Results = lists:foldr(
+        fun(#xmlText{value = Value}, Acc) -> lists:append(Value, Acc);
+           (_, Acc) -> Acc
+        end,
+        Result,
+        xmerl_xpath:string(Xpath, Xml)
+    ),
+    format_text(Xml, Tail, Results).

@@ -27,14 +27,11 @@
 %% Will be useful for getting RSS feedsparsing JSON
 -import(json_parser).
 
--record(tweet, {guid, title, description, date, link}).
--record(user, {id, name, screen_name, location, description, profile_image_url, url, protected, followers_count}).
--record(status, {created_at,id,text,source, truncated,in_reply_to_status_id, in_reply_to_user_id, favorited}).
 
 % Search methods
 -export([auth_user/2,trends/0,tweets/2,term/1]).
 %% Twitter specific methods
--export([user_timeline/1,public_timeline/0,followers/2]).
+-export([user_timeline/1,public_timeline/0]).
 
 -include_lib("xmerl/include/xmerl.hrl").
 
@@ -114,7 +111,7 @@ term(Term) ->
 %% If an error message is found then we know that the user doesnt exist.
 %%
 user_exists(User) ->
-    case get_xml(?UserTimeUrl ++ User ++ ".rss", nil, nil) of
+    case get_xml(?UserTimeUrl ++ User ++ ".rss") of
 	{error,Error} ->
 	    {error, Error};
 	{ok, Xml} ->
@@ -124,18 +121,6 @@ user_exists(User) ->
 		_ ->
 		    {true, User++": found!"}
 	    end
-    end.
-
-%% Retrieves a users followers.
-%%
-%% Needs to be worked on
-%%
-followers(User, Pass) ->
-    case get_xml(?FollowersUrl, User, Pass) of
-	{ok,Xml} ->
-	    parse_users(Xml);
-	{error,Error} ->
-	    {error,Error}
     end.
 
 %% Get a specific user's twitters.
@@ -151,8 +136,14 @@ user_timeline(User) ->
 %% Retrieve the public timeline.
 public_timeline() ->
     get_twitters(?PubTimeUrl).
-get_xml(Url,nil,nil) ->
-    get_xml(Url,nil,nil);
+get_xml(Url) ->
+    case request_url(Url,nil,nil) of
+	    {ok, Body} ->
+	       {Xml, _Rest} = xmerl_scan:string(Body),
+	       {ok, Xml};
+	    {error, Error} ->
+	       {error, Error}
+    end.
 %% Get the actual XML response.
 get_xml(Url,Login,Password) ->
     case request_url(Url,Login,Password) of
@@ -171,15 +162,6 @@ get_twitters(Url) ->
 	    {error,Error}
     end.
 
-parse_users(Xml) ->
-    [parse_user(User) || User <- xmerl_xpath:string("/users/user",Xml)].
-
-parse_user(Xml) ->
-    User = #user {
-      id = format_text(Xml,["/user/id/text()"], ""),
-      name = format_text(Xml, ["/user/name/text()"], ""),
-      screen_name = format_text(Xml, ["/user/screen_name/text()"], "")
-      }.
 
 %% Parses our XML sending each tweet to parse_twitters
 parse_xml(Xml,XPath) ->
@@ -246,14 +228,3 @@ headers(User, Pass) ->
     Basic = lists:flatten(io_lib:fwrite("Basic ~s", [Auth])),
     [{"User-Agent", ?App}, {"Authorization", Basic}].
 
-%% @private
-format_text(_, [], Result) -> Result;
-format_text(Xml, [Xpath | Tail], Result) ->
-    Results = lists:foldr(
-        fun(#xmlText{value = Value}, Acc) -> lists:append(Value, Acc);
-           (_, Acc) -> Acc
-        end,
-        Result,
-        xmerl_xpath:string(Xpath, Xml)
-    ),
-    format_text(Xml, Tail, Results).
