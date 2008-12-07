@@ -175,13 +175,11 @@ parse_users(Xml) ->
     [parse_user(User) || User <- xmerl_xpath:string("/users/user",Xml)].
 
 parse_user(Xml) ->
-    %id = format_text(Xml,"/user/id/text()","").
-    [ #xmlText{value=Id} ] = xmerl_xpath:string("//user/id/text()", Xml),
-    [ #xmlText{value=Name} ] = xmerl_xpath:string("//user/name/text()", Xml),
-    [ #xmlText{value=ScreenName} ] = xmerl_xpath:string("//user/screen_name/text()", Xml),
-    [ #xmlText{value=Location} ] = xmerl_xpath:string("//user/location/text()", Xml),
-    [ #xmlText{value=Description} ] = xmerl_xpath:string("//user/description/text()", Xml),
-    {Id,Name,ScreenName,Location}.
+    User = #user {
+      id = format_text(Xml,["/user/id/text()"], ""),
+      name = format_text(Xml, ["/user/name/text()"], ""),
+      screen_name = format_text(Xml, ["/user/screen_name/text()"], "")
+      }.
 
 %% Parses our XML sending each tweet to parse_twitters
 parse_xml(Xml,XPath) ->
@@ -247,3 +245,15 @@ headers(User, Pass) ->
     Auth = base64:encode(User ++ ":" ++ Pass),
     Basic = lists:flatten(io_lib:fwrite("Basic ~s", [Auth])),
     [{"User-Agent", ?App}, {"Authorization", Basic}].
+
+%% @private
+format_text(_, [], Result) -> Result;
+format_text(Xml, [Xpath | Tail], Result) ->
+    Results = lists:foldr(
+        fun(#xmlText{value = Value}, Acc) -> lists:append(Value, Acc);
+           (_, Acc) -> Acc
+        end,
+        Result,
+        xmerl_xpath:string(Xpath, Xml)
+    ),
+    format_text(Xml, Tail, Results).
