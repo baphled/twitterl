@@ -68,6 +68,8 @@ handle_call({remove_session, Login}, _From, State) ->
     end,
     {reply, Result, State#twitterl{ sessions = NewTree }};
 
+%%%
+%%% catches  all our call calls, sets the time and tried to execute the call.
 handle_call({Client, Method, Args}, _From, State) ->
     Now = calendar:datetime_to_gregorian_seconds(erlang:universaltime()),
     Response = case session_from_client(State, Client) of
@@ -85,8 +87,8 @@ handle_call({Client, Method, Args}, _From, State) ->
 
 handle_call(_, _From, State) -> {noreply, ok, State}.
 
-terminate(_Reason, _State) ->
-    ok.
+terminate(_Reason, State) ->
+    {ok,State}.
 
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
