@@ -109,9 +109,9 @@ find_tweets(Login, _Password, Args) ->
 find_term(_Login, _Password, Args) ->
     twitterl_interface:term(Args).
 
-public_timeline(_Login, _Password, _Args) ->
+tweet_timeline(_Login, _Password, _Args) ->
     twitterl_interface:public_timeline().
-user_timeline(Login, _Password, _Args) ->
+my_timeline(Login, _Password, _Args) ->
     twitterl_interface:user_timeline(Login).
 
 %% These methods will return more detailed information
@@ -120,7 +120,8 @@ user_followers(Login, Password, _Args) ->
     twitterl_interface:handle_status(followers, Login, Password).
 user_friends(Login, Password, _Args) ->
     twitterl_interface:handle_status(friends, Login, Password).
-status_user_timeline(Login, Password, _Args) ->
+user_timeline(Login, Password, _Args) ->
     twitterl_interface:handle_status(user_timeline, Login, Password).
-
+public_timeline(Login, Password, _Args) ->
+    twitterl_interface:handle_status(public_timeline, Login, Password).
 

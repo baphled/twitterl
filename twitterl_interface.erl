@@ -158,7 +158,7 @@ auth_user(Login, Password) ->
 
 %% Methods to retrieve user based information.
 
-%%% Handles each status
+%%% Handles each of our user & status requests
 %@private
 handle_status(Type,User,Pass) ->
     case Type of
@@ -249,17 +249,17 @@ parse_status(Node) when is_tuple(Node)->
       favorited = format_text(Node, ["/status/favourited/text()"],"")
     },
     case xmerl_xpath:string("/status/user", Node) of
-        [] ->  Result;
+        [] ->  Status;
         [User] -> Status#status{ user = parse_user(User) }
     end.
 
-parse_item(Item) ->
-    Result = #tweet {
-      title = format_text(Item, ["/item/title/text()"],""),
-      pubDate = format_text(Item, ["/item/pubDate/text()"],""),
-      link = format_text(Item, ["/item/link/text()"], "")
+parse_item(Node) ->
+    Item = #tweet {
+      title = format_text(Node, ["/item/title/text()"],""),
+      pubDate = format_text(Node, ["/item/pubDate/text()"],""),
+      link = format_text(Node, ["/item/link/text()"], "")
     },
-    Result.
+    Item.
 
 %%% Parses our user information.
 %%% Should really find a better way of doing this, we repeating ourselves
