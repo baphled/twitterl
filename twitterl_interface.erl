@@ -28,7 +28,7 @@
 %% Will be useful for getting RSS feedsparsing JSON
 -import(json_parser).
 
--record(status, {created_at, id, user, text, source, truncated, in_reply_to_status_id, in_reply_to_user_id, favorited}).
+-record(status, {created_at, id, text, source, truncated, in_reply_to_status_id, in_reply_to_user_id, favorited,user}).
 -record(tweet, {title, pubDate, link}).
 -record(user, {id, name, screen_name, location, description, profile_image_url, url, protected, followers_count, status}).
 
@@ -225,7 +225,7 @@ get_twitters(Url) ->
 	    {error,Error}
     end.
 
-%% Parses our XML sending each tweet to parse_twitters
+%% Parses our XML
 parse_items(Xml) ->
     [parse_item(Item) || Item <- xmerl_xpath:string("/rss/channel/item", Xml)].
 
@@ -233,15 +233,12 @@ parse_users(Xml) ->
     [parse_user(User) || User <- xmerl_xpath:string("/users/user",Xml)].
 
 parse_statuses(Xml) ->
-    %Xml = get_body(Body),
     [parse_status(Status) || Status <- xmerl_xpath:string("/statuses/status",Xml)].
 
 parse_status(Xml) when is_list(Xml) ->
     xmerl_xpath:string("/status",Xml);
-    %[parse_status(Node) || Node <- xmerl_xpath:string("/status",Xml)];
-
 parse_status(Node) when is_tuple(Node)->
-    Result = #status{
+    Status = #status{
       created_at = format_text(Node, ["/status/created_at/text()"],""),
       id = format_text(Node, ["/status/id/text()"],""),
       text = format_text(Node, ["/status/text/text()"],""),
@@ -253,7 +250,7 @@ parse_status(Node) when is_tuple(Node)->
     },
     case xmerl_xpath:string("/status/user", Node) of
         [] ->  Result;
-        [Status] -> Result#status{ user = parse_user(Status) }
+        [User] -> Status#status{ user = parse_user(User) }
     end.
 
 parse_item(Item) ->
