@@ -11,8 +11,12 @@
 -import(twitterl_interface).
 
 %% API
--export([start/0,call/2,add_session/2,remove_session/1]).
--compile(export_all).
+-export([start/0,call/2,call/3,add_session/2,remove_session/1]).
+%% Wrapper methods, exposed to show commands useable with call
+-export([find_trends/3,find_tweets/3,find_term/3]).
+-export([tweet_timeline/3,my_timeline/3]).
+-export([user_followers/3,user_friends/3,user_timeline/3,public_timeline/3]).
+%-compile(export_all).
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
