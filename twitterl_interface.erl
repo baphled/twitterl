@@ -233,13 +233,14 @@ parse_users(Xml) ->
     [parse_user(User) || User <- xmerl_xpath:string("/users/user",Xml)].
 
 parse_statuses(Xml) ->
+    %Xml = get_body(Body),
     [parse_status(Status) || Status <- xmerl_xpath:string("/statuses/status",Xml)].
 
-parse_status(Xml) when is_tuple(Xml) ->
+parse_status(Xml) when is_list(Xml) ->
     xmerl_xpath:string("/status",Xml);
     %[parse_status(Node) || Node <- xmerl_xpath:string("/status",Xml)];
 
-parse_status(Node) when is_list(Node)->
+parse_status(Node) when is_tuple(Node)->
     Result = #status{
       created_at = format_text(Node, ["/status/created_at/text()"],""),
       id = format_text(Node, ["/status/id/text()"],""),
