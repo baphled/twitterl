@@ -1,7 +1,8 @@
 %%%-------------------------------------------------------------------
 %%% File    : twitterl.erl
 %%% Author  : Yomi (baphled boodah) Akindayini <yomi@boodah.net>
-%%% Description : Basic Twitter API, used to interact with twitter.
+%%% Description : Basic Twitter ineterface, used by twitterl to retrieve
+%%% search and status information from twitter.
 %%%
 %%% twitterl is free software: you can redistribute it and/or modify
 %%% it under the terms of the GNU Lesser General Public License as 
@@ -140,6 +141,18 @@ user_timeline(User) ->
 public_timeline() ->
     get_twitters(?PubTimeUrl).
 
+%% Checks to see if the user can actually log in.
+auth_user(Login, Password) ->
+    case request_url(?VerifyUrl, Login, Password) of
+        {ok,Body} ->
+	    case Body of
+		    "<authorized>true</authorized>" -> true;
+		    _ -> false
+	    end;
+	 {error,Error} ->
+	    {error,Error}
+    end.
+
 %% Methods to retrieve user based information.
 
 %% Retrieves a users followers.
@@ -153,6 +166,7 @@ status_followers(User, Pass) ->
 	    {error,Error}
     end.
 
+%% Parsing functionality
 get_xml(Url) ->
     case request_url(Url,nil,nil) of
 	    {ok, Body} ->
@@ -180,7 +194,6 @@ get_twitters(Url) ->
 	    {error,Error}
     end.
 
-
 %% Parses our XML sending each tweet to parse_twitters
 parse_xml(Xml,XPath) ->
     Twitters = xmerl_xpath:string(XPath, Xml),
@@ -202,19 +215,6 @@ parse_twitters(Tweets,[Tweet|Twitters]) ->
     end;
 parse_twitters(List,[]) ->
     {ok,List}.
-
-%% Checks to see if the user can actually log in.
-auth_user(Login, Password) ->
-    case request_url(?VerifyUrl, Login, Password) of
-        {ok,Body} ->
-	    case Body of
-		    "<authorized>true</authorized>" -> true;
-		    _ -> false
-	    end;
-	 {error,Error} ->
-	    {error,Error}
-    end.
-
 
 parse_users(Xml) ->
     [parse_user(User) || User <- xmerl_xpath:string("/users/user",Xml)].
