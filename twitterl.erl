@@ -100,14 +100,15 @@ session_from_client(State, Client) ->
         false -> {error, invalid_client};
         true -> gb_trees:get(Client, State#twitterl.sessions)
     end.
-%% The following methods stand alone as part of the old system
-%% they only return the actual description with no other data.
-trends(_Login, _Password, _Args) ->
+
+%% The following methods are used to retrieve RSS based data.
+find_trends(_Login, _Password, _Args) ->
     twitterl_interface:trends().
-tweets(Login, _Password, Args) ->
+find_tweets(Login, _Password, Args) ->
     twitterl_interface:tweets(Args,Login).
-term(_Login, _Password, Args) ->
+find_term(_Login, _Password, Args) ->
     twitterl_interface:term(Args).
+
 public_timeline(_Login, _Password, _Args) ->
     twitterl_interface:public_timeline().
 
@@ -117,6 +118,3 @@ status_followers(Login, Password, _Args) ->
     twitterl_interface:status_followers(Login, Password).
 user_timeline(Login, _Password, _Args) ->
     twitterl_interface:user_timeline(Login).
-
-
-
