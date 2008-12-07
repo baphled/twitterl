@@ -28,6 +28,7 @@
 %% Will be useful for getting RSS feedsparsing JSON
 -import(json_parser).
 
+-record(tweet, {title, pubDate, link}).
 -record(user, {id, name, screen_name, location, description, profile_image_url, url, protected, followers_count}).
 
 -export([status_followers/2]).
@@ -189,7 +190,8 @@ get_xml(Url,Login,Password) ->
 get_twitters(Url) ->
     case get_xml(Url,nil, nil) of
 	{ok,Xml} ->
-	    parse_xml(Xml,"//item/title/text()");
+	    %parse_xml(Xml,"//item/title/text()");
+	    parse_items(Xml);
 	{error,Error} ->
 	    {error,Error}
     end.
@@ -216,9 +218,19 @@ parse_twitters(Tweets,[Tweet|Twitters]) ->
 parse_twitters(List,[]) ->
     {ok,List}.
 
+parse_items(Xml) ->
+    [parse_item(Item) || Item <- xmerl_xpath:string("/rss/channel/item", Xml)].
+
 parse_users(Xml) ->
     [parse_user(User) || User <- xmerl_xpath:string("/users/user",Xml)].
 
+parse_item(Item) ->
+    Result = #tweet {
+      title = format_text(Item, ["/item/title/text()"],""),
+      pubDate = format_text(Item, ["/item/pubDate/text()"],""),
+      link = format_text(Item, ["/item/link/text()"], "")
+    },
+    Result.
 parse_user(Xml) ->
     User = #user {
       id = format_text(Xml,["/user/id/text()"], ""),
