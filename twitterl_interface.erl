@@ -28,10 +28,12 @@
 %% Will be useful for getting RSS feedsparsing JSON
 -import(json_parser).
 
+-record(status, {created_at, id, user, text, source, truncated, in_reply_to_status_id, in_reply_to_user_id, favorited}).
 -record(tweet, {title, pubDate, link}).
--record(user, {id, name, screen_name, location, description, profile_image_url, url, protected, followers_count}).
+-record(user, {id, name, screen_name, location, description, profile_image_url, url, protected, followers_count, status}).
 
--export([status_followers/2]).
+-export([handle_status/3]).
+%-export([status_followers/2,status_friends/2]) .
 % Search methods
 -export([auth_user/2,trends/0,tweets/2,term/1]).
 %% Twitter specific methods
@@ -47,7 +49,7 @@
 -define(SearchUrl, "http://search.twitter.com").
 -define(PubTimeUrl, ?TwitUrl"/statuses/public_timeline.rss").
 -define(UserTimeUrl, ?TwitUrl"/statuses/user_timeline/").
--define(FollowersUrl, ?TwitUrl"/statuses/followers.xml").
+-define(StatusesUrl, ?TwitUrl"/statuses/").
 -define(SearchHashUrl, ?SearchUrl"/search.rss?q=").
 -define(SearchTrendsUrl, ?SearchUrl"/trends.json").
 -define(VerifyUrl, ?TwitUrl"/account/verify_credentials.xml").
@@ -156,13 +158,34 @@ auth_user(Login, Password) ->
 
 %% Methods to retrieve user based information.
 
-%% Retrieves a users followers.
-%%
-%%
-status_followers(User, Pass) ->
-    case get_xml(?FollowersUrl, User, Pass) of
+%%% Handles each status
+%@private
+handle_status(Type,User,Pass) ->
+    case Type of
+	followers ->
+	    get_user("followers.xml",User,Pass);
+	friends ->
+            get_user("friends.xml",User,Pass);
+	user_timeline ->
+	    get_status("user_timeline.xml",User,Pass);
+	public_timeline ->
+	    get_status("public_timeline.xml",User,Pass);
+	_ ->
+	    {error,"Invalid status type"}
+    end.
+
+get_user(Url,User,Pass) ->
+    case get_xml(?StatusesUrl++Url, User, Pass) of
 	{ok,Xml} ->
 	    parse_users(Xml);
+	{error,Error} ->
+	    {error,Error}
+    end.
+
+get_status(Url,User,Pass) ->
+     case get_xml(?StatusesUrl++Url, User, Pass) of
+	{ok,Xml} ->
+	    parse_statuses(Xml);
 	{error,Error} ->
 	    {error,Error}
     end.
@@ -190,39 +213,40 @@ get_xml(Url,Login,Password) ->
 get_twitters(Url) ->
     case get_xml(Url,nil, nil) of
 	{ok,Xml} ->
-	    %parse_xml(Xml,"//item/title/text()");
 	    parse_items(Xml);
 	{error,Error} ->
 	    {error,Error}
     end.
 
 %% Parses our XML sending each tweet to parse_twitters
-parse_xml(Xml,XPath) ->
-    Twitters = xmerl_xpath:string(XPath, Xml),
-    case 0 =:= length(Twitters) of
-	false ->
-	    parse_twitters([],Twitters);
-	_ ->
-	    {error,"Unable to find twitters."}
-    end.
-
-%% Loops through each of the XML twitter list and prints them out.
-parse_twitters(Tweets,[Tweet|Twitters]) ->
-    case Tweet of
-	{_,_,_,_,Title,_} ->
-	    MergedList = [Title| Tweets],
-	    parse_twitters(MergedList,Twitters);
-	_ ->
-	    {error, "Unable to read twitter"}
-    end;
-parse_twitters(List,[]) ->
-    {ok,List}.
-
 parse_items(Xml) ->
     [parse_item(Item) || Item <- xmerl_xpath:string("/rss/channel/item", Xml)].
 
 parse_users(Xml) ->
     [parse_user(User) || User <- xmerl_xpath:string("/users/user",Xml)].
+
+parse_statuses(Xml) ->
+    [parse_status(Status) || Status <- xmerl_xpath:string("/statuses/status",Xml)].
+
+parse_status(Xml) when is_tuple(Xml) ->
+    xmerl_xpath:string("/status",Xml);
+    %[parse_status(Node) || Node <- xmerl_xpath:string("/status",Xml)];
+
+parse_status(Node) when is_list(Node)->
+    Result = #status{
+      created_at = format_text(Node, ["/status/created_at/text()"],""),
+      id = format_text(Node, ["/status/id/text()"],""),
+      text = format_text(Node, ["/status/text/text()"],""),
+      source = format_text(Node, ["/status/source/text()"],""),
+      truncated = format_text(Node, ["/status/truncated/text()"],""),
+      in_reply_to_status_id = format_text(Node, ["/status/in_reply_to_status_id/text()"],""),
+      in_reply_to_user_id = format_text(Node, ["/status/in_reply_to_user_id/text()"],""),
+      favorited = format_text(Node, ["/status/favourited/text()"],"")
+    },
+    case xmerl_xpath:string("/status/user", Result) of
+        [] ->  Result;
+        [Status] -> Result#status{ user = parse_user(Status) }
+    end.
 
 parse_item(Item) ->
     Result = #tweet {
@@ -231,13 +255,26 @@ parse_item(Item) ->
       link = format_text(Item, ["/item/link/text()"], "")
     },
     Result.
-parse_user(Xml) ->
+
+%%% Parses our user information.
+%%% Should really find a better way of doing this, we repeating ourselves
+%%%
+parse_user(Node) ->
     User = #user {
-      id = format_text(Xml,["/user/id/text()"], ""),
-      name = format_text(Xml, ["/user/name/text()"], ""),
-      screen_name = format_text(Xml, ["/user/screen_name/text()"], "")
+      id = format_text(Node,["/user/id/text()"], ""),
+      name = format_text(Node, ["/user/name/text()"], ""),
+      screen_name = format_text(Node, ["/user/screen_name/text()"], ""),
+      location = format_text(Node, ["/user/location/text()"], ""),
+      description = format_text(Node, ["/user/description/text()"], ""),
+      profile_image_url = format_text(Node, ["/user/profile_image_url/text()"], ""),
+      url = format_text(Node, ["/user/url/text()"], ""),
+      protected = format_text(Node, ["/user/protected/text()"], ""),
+      followers_count = format_text(Node, ["/user/followers_count/text()"], "")
       },
-    User.
+    case xmerl_xpath:string("/user/status", Node) of
+        [] -> User;
+        [Status] -> User#user{ status = parse_status(Status) }
+    end.
 
 %% @private
 format_text(_, [], Result) -> Result;

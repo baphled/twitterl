@@ -111,10 +111,16 @@ find_term(_Login, _Password, Args) ->
 
 public_timeline(_Login, _Password, _Args) ->
     twitterl_interface:public_timeline().
+user_timeline(Login, _Password, _Args) ->
+    twitterl_interface:user_timeline(Login).
 
 %% These methods will return more detailed information
 %% including who is friends with who & retrieving conversations.
 status_followers(Login, Password, _Args) ->
-    twitterl_interface:status_followers(Login, Password).
-user_timeline(Login, _Password, _Args) ->
-    twitterl_interface:user_timeline(Login).
+    twitterl_interface:handle_status(followers, Login, Password).
+status_friends(Login, Password, _Args) ->
+    twitterl_interface:handle_status(friends, Login, Password).
+status_user_timeline(Login, Password, _Args) ->
+    twitterl_interface:handle_status(user_timeline, Login, Password).
+
+
