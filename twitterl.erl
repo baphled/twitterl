@@ -123,11 +123,11 @@ my_timeline(Login, _Password, _Args) ->
 %% These methods will return more detailed information
 %% including who is friends with who & retrieving conversations.
 user_followers(Login, Password, _Args) ->
-    twitterl_interface:handle_status(followers, Login, Password).
+    twitterl_interface:handle_status(followers, Login, Password,nil).
 user_friends(Login, Password, _Args) ->
-    twitterl_interface:handle_status(friends, Login, Password).
+    twitterl_interface:handle_status(friends, Login, Password, nil).
 user_timeline(Login, Password, _Args) ->
-    twitterl_interface:handle_status(user_timeline, Login, Password).
+    twitterl_interface:handle_status(user_timeline, Login, Password, nil).
 public_timeline(Login, Password, _Args) ->
-    twitterl_interface:handle_status(public_timeline, Login, Password).
+    twitterl_interface:handle_status(public_timeline, Login, Password, nil).
 
