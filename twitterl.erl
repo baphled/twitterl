@@ -19,7 +19,7 @@
 -export([status_show/3]).
 
 %User based methods
--export([user_followers/3,user_friends/3,user_timeline/3,public_timeline/3]).
+-export([user_show/3,user_followers/3,user_friends/3,user_timeline/3,public_timeline/3]).
 %-compile(export_all).
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -87,7 +87,7 @@ handle_call({Client, Method, Args}, _From, State) ->
             catch
                 Err:Msg ->
                     io:format("~p:~p~n", [Err, Msg]),
-                    {error, unsupported_method}
+                    {error, {Method, Args}}
             end;
         _ -> {error, unknown}
     end,
@@ -127,11 +127,13 @@ my_timeline(Login, _Password, _Args) ->
 %% These methods will return more detailed information
 %% including who is friends with who & retrieving conversations.
 user_followers(Login, Password, _Args) ->
-    twitterl_interface:handle_status(followers, Login, Password,nil).
+    twitterl_interface:handle_user(followers, Login, Password,nil).
 user_friends(Login, Password, _Args) ->
-    twitterl_interface:handle_status(friends, Login, Password, nil).
+    twitterl_interface:handle_user(friends, Login, Password, nil).
 user_timeline(Login, Password, _Args) ->
-    twitterl_interface:handle_status(user_timeline, Login, Password, nil).
+    twitterl_interface:handle_user(user_timeline, Login, Password, nil).
+user_show(Login, Password, Args) ->
+    twitterl_interface:handle_user(user_show, Login, Password, Args).
 public_timeline(Login, Password, _Args) ->
     twitterl_interface:handle_status(public_timeline, Login, Password, nil).
 status_show(Login, Password, Args) ->
