@@ -33,7 +33,7 @@
 -record(user, {id, name, screen_name, location, description, profile_image_url, url, protected, followers_count, status}).
 
 -export([handle_status/3,handle_status/4]).
-%-export([status_followers/2,status_friends/2]) .
+
 % Search methods
 -export([auth_user/2,trends/0,tweets/2,term/1]).
 %% Twitter specific methods
@@ -168,9 +168,9 @@ handle_status(Type,User,Pass) ->
     handle_status(Type,User,Pass,nil).
 handle_status(Type,User,Pass,Args) ->
     case Type of
-	followers ->
+	user_followers ->
 	    get_user(?StatusesUrl++"followers.xml",User,Pass);
-	friends ->
+	user_friends ->
             get_user(?StatusesUrl++"friends.xml",User,Pass);
 	user_show ->
 	    case is_list(Args) of
