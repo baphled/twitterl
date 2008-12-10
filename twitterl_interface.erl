@@ -30,7 +30,7 @@
 
 -record(status, {created_at, id, text, source, truncated, in_reply_to_status_id, in_reply_to_user_id, favorited,user}).
 -record(tweet, {title, pubDate, link}).
--record(user, {id, name, screen_name, location, description, profile_image_url, url, protected, followers_count, status}).
+-record(user, {id, name, screen_name, location, description, profile_image_url, url, protected, followers_count, friends_count, created_at, favourites_count, utc_offset, time_zone, following, notifications, statuses_count,status}).
 
 -export([handle_status/3,handle_status/4]).
 
@@ -193,7 +193,7 @@ handle_status(Type,User,Pass,Args) ->
 get_user(Url,User,Pass) ->
     case get_xml(Url, User, Pass) of
 	{ok,Xml} ->
-	    list:reverse(parse_users(Xml));
+	    lists:reverse(parse_users(Xml));
 	{error,Error} ->
 	    {error,Error}
     end.
@@ -263,9 +263,6 @@ parse_status(Node) when is_tuple(Node)->
         [User] -> Status#status{ user = parse_user(User) }
     end.
 
-node_parser(Type,Node) ->
-    erlang:apply(Type, Node).
-
 parse_item(Node) ->
     Item = #tweet {
       title = format_text(Node, ["/item/title/text()"],""),
@@ -287,7 +284,15 @@ parse_user(Node) ->
       profile_image_url = format_text(Node, ["/user/profile_image_url/text()"], ""),
       url = format_text(Node, ["/user/url/text()"], ""),
       protected = format_text(Node, ["/user/protected/text()"], ""),
-      followers_count = format_text(Node, ["/user/followers_count/text()"], "")
+      followers_count = format_text(Node, ["/user/followers_count/text()"], ""),
+      friends_count = format_text(Node, ["/user/friends_count/text()"], ""),
+      created_at = format_text(Node, ["/user/created_at/text()"], ""),
+      favourites_count = format_text(Node, ["/user/favourites_count/text()"], ""),
+      utc_offset = format_text(Node, ["/user/utc_offset/text()"], ""),
+      time_zone = format_text(Node, ["/user/time_zone/text()"], ""),
+      following = format_text(Node, ["/user/following/text()"], ""),
+      notifications = format_text(Node, ["/user/notifications/text()"], ""),
+      statuses_count = format_text(Node, ["/user/statuses_count/text()"], "")
     },
     case xmerl_xpath:string("/user/status", Node) of
         [] -> User;
