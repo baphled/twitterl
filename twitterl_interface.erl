@@ -168,16 +168,21 @@ handle_status(Type,User,Pass,nil) ->
 handle_status(Type,User,Pass,Args) ->
     case Type of
 	followers ->
-	    get_user("followers.xml",User,Pass);
+	    get_user(?StatusesUrl++"followers.xml",User,Pass);
 	friends ->
-            get_user("friends.xml",User,Pass);
+            get_user(?StatusesUrl++"friends.xml",User,Pass);
+	user_show ->
+	    case is_list(Args) of
+		true -> get_user(?TwitUrl"/users/show/" ++ Args ++ ".xml", User,Pass);
+		_ -> {error, {Type, Args}}
+	    end;
 	user_timeline ->
-	    get_status("user_timeline.xml",User,Pass);
+	    get_status(?StatusesUrl++"user_timeline.xml",User,Pass);
 	public_timeline ->
-	    get_status("public_timeline.xml",User,Pass);
+	    get_status(?StatusesUrl++"public_timeline.xml",User,Pass);
 	status_show ->
 	    case is_list(Args) of
-		true -> get_status("show.xml?id="++Args, User,Pass);
+		true -> get_status(?StatusesUrl++"show.xml?id="++Args, User,Pass);
 		_ -> {error, {Type, Args}}
 	    end;
 	_ ->
@@ -185,7 +190,7 @@ handle_status(Type,User,Pass,Args) ->
     end.
 
 get_user(Url,User,Pass) ->
-    case get_xml(?StatusesUrl++Url, User, Pass) of
+    case get_xml(Url, User, Pass) of
 	{ok,Xml} ->
 	    parse_users(Xml);
 	{error,Error} ->
@@ -193,7 +198,7 @@ get_user(Url,User,Pass) ->
     end.
 
 get_status(Url,User,Pass) ->
-     case get_xml(?StatusesUrl++Url, User, Pass) of
+     case get_xml(Url, User, Pass) of
 	{ok,Xml} ->
 	    parse_statuses(Xml);
 	{error,Error} ->
@@ -234,7 +239,7 @@ parse_items(Xml) ->
     [parse_item(Item) || Item <- xmerl_xpath:string("/rss/channel/item", Xml)].
 
 parse_users(Xml) ->
-    [parse_user(User) || User <- xmerl_xpath:string("/users/user",Xml)].
+    [parse_user(User) || User <- xmerl_xpath:string("/users/user|/user",Xml)].
 
 parse_statuses(Xml) ->
     [parse_status(Status) || Status <- xmerl_xpath:string("/statuses/status|/status",Xml)].

@@ -13,8 +13,7 @@
 %% API
 -export([start/0,call/2,call/3,add_session/2,remove_session/1]).
 %% Wrapper methods, exposed to show commands useable with call
--export([find_trends/3,find_tweets/3,find_term/3]).
--export([tweet_timeline/3,my_timeline/3]).
+-export([find_trends/3,find_tweets/3,find_term/3,tweet_timeline/3,my_timeline/3]).
 
 %Status based methods
 -export([status_show/3]).
