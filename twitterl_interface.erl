@@ -175,7 +175,7 @@ handle_status(Type,User,Pass,Args) ->
 	    get_status("user_timeline.xml",User,Pass);
 	public_timeline ->
 	    get_status("public_timeline.xml",User,Pass);
-	show ->
+	user_show ->
 	    case is_list(Args) of
 		true -> get_status("show.xml?id="++Args, User,Pass);
 		_ -> {error, {Type, Args}}
@@ -279,7 +279,7 @@ parse_user(Node) ->
       url = format_text(Node, ["/user/url/text()"], ""),
       protected = format_text(Node, ["/user/protected/text()"], ""),
       followers_count = format_text(Node, ["/user/followers_count/text()"], "")
-      },
+    },
     case xmerl_xpath:string("/user/status", Node) of
         [] -> User;
         [Status] -> User#user{ status = parse_status(Status) }

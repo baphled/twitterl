@@ -130,4 +130,5 @@ user_timeline(Login, Password, _Args) ->
     twitterl_interface:handle_status(user_timeline, Login, Password, nil).
 public_timeline(Login, Password, _Args) ->
     twitterl_interface:handle_status(public_timeline, Login, Password, nil).
-
+status_show(Login, Password, Args) ->
+    twitterl_interface:handle_status(user_show, Login, Password, Args).
