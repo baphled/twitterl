@@ -193,7 +193,7 @@ handle_status(Type,User,Pass,Args) ->
 get_user(Url,User,Pass) ->
     case get_xml(Url, User, Pass) of
 	{ok,Xml} ->
-	    parse_users(Xml);
+	    list:reverse(parse_users(Xml));
 	{error,Error} ->
 	    {error,Error}
     end.
@@ -201,7 +201,7 @@ get_user(Url,User,Pass) ->
 get_status(Url,User,Pass) ->
      case get_xml(Url, User, Pass) of
 	{ok,Xml} ->
-	    parse_statuses(Xml);
+	    lists:reverse(parse_statuses(Xml));
 	{error,Error} ->
 	    {error,Error}
     end.
@@ -222,7 +222,7 @@ get_xml(Url,Login,Password) ->
 get_twitters(Url) ->
     case get_xml(Url,nil, nil) of
 	{ok,Xml} ->
-	    parse_items(Xml);
+	    lists:reverse(parse_items(Xml));
 	{error,Error} ->
 	    {error,Error}
     end.
@@ -263,6 +263,9 @@ parse_status(Node) when is_tuple(Node)->
         [User] -> Status#status{ user = parse_user(User) }
     end.
 
+node_parser(Type,Node) ->
+    erlang:apply(Type, Node).
+
 parse_item(Node) ->
     Item = #tweet {
       title = format_text(Node, ["/item/title/text()"],""),
@@ -295,7 +298,8 @@ parse_user(Node) ->
 format_text(_, [], Result) -> Result;
 format_text(Xml, [Xpath | Tail], Result) ->
     Results = lists:foldr(
-        fun(#xmlText{value = Value}, Acc) -> lists:append(Value, Acc);
+        fun(#xmlText{value = Value}, Acc) ->
+	   lists:append(Value, Acc);
            (_, Acc) -> Acc
         end,
         Result,

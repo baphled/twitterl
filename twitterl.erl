@@ -107,7 +107,7 @@ code_change(_OldVsn, State, _Extra) ->
 %% private
 session_from_client(State, Client) ->
     case gb_trees:is_defined(Client, State#twitterl.sessions) of
-        false -> {error, invalid_client};
+        false -> {error, {invalid_client, Client}};
         true -> gb_trees:get(Client, State#twitterl.sessions)
     end.
 
