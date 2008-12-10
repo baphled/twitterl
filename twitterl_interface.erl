@@ -49,6 +49,7 @@
 -define(SearchUrl, "http://search.twitter.com").
 -define(PubTimeUrl, ?TwitUrl"/statuses/public_timeline.rss").
 -define(UserTimeUrl, ?TwitUrl"/statuses/user_timeline/").
+-define(UsersUrl, ?TwitUrl"/users/").
 -define(StatusesUrl, ?TwitUrl"/statuses/").
 -define(SearchHashUrl, ?SearchUrl"/search.rss?q=").
 -define(SearchTrendsUrl, ?SearchUrl"/trends.json").
@@ -173,7 +174,7 @@ handle_status(Type,User,Pass,Args) ->
             get_user(?StatusesUrl++"friends.xml",User,Pass);
 	user_show ->
 	    case is_list(Args) of
-		true -> get_user("show/" ++ Args ++ ".xml", User,Pass);
+		true -> get_user(?UsersUrl"show/" ++ Args ++ ".xml", User,Pass);
 		_ -> {error, {Type, Args}}
 	    end;
 	user_timeline ->
