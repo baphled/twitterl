@@ -323,6 +323,21 @@ request_url(get,Url,nil,nil) ->
 %% Make an authenticated request to the specified URL.
 request_url(get,Url, Login, Pass) ->
     check_response(http:request(get, {Url, headers(Login, Pass)}, [], [])).
+request_url(post, Url, Login, Pass,Args) ->
+    Body = twitterl_interface:build_keyval(Args),
+    HttpResult = http:request(post, {Url, headers(Login, Pass), 
+				     "application/x-www-form-urlencoded", Body} , [], []),
+    check_response(HttpResponse).
+
+build_keyval(Args) ->
+    Body = lists:concat(
+        lists:foldl(
+            fun (Rec, []) -> [Rec]; (Rec, Ac) -> [Rec, "&" | Ac] end,
+            [],
+            [K ++ "=" ++ ibrowse:url_encode(V) || {K, V} <- Args]
+        )
+    ),
+    Body.
 
 %% Checks out HTTP response, if we get a 200 retrieve
 %% the response body, otherwise return the status code & message.
