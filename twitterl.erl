@@ -71,7 +71,7 @@ handle_call({remove_session, Login}, _From, State) ->
 		       Result = "Session dropped",
 		       gb_trees:delete(Login, State#twitterl.sessions);
         false -> 
-		       Result = "Session not dropped",
+		       Result = "Unable to drop session.",
 		       State#twitterl.sessions
     end,
     {reply, Result, State#twitterl{ sessions = NewTree }};
@@ -112,6 +112,7 @@ session_from_client(State, Client) ->
     end.
 
 %% The following methods are used to retrieve RSS based data.
+%Search based methods
 find_trends(_Login, _Password, _Args) ->
     twitterl_interface:trends().
 find_tweets(Login, _Password, Args) ->
@@ -119,6 +120,7 @@ find_tweets(Login, _Password, Args) ->
 find_term(_Login, _Password, Args) ->
     twitterl_interface:term(Args).
 
+% Used to retrieve basic tweet information
 tweet_timeline(_Login, _Password, _Args) ->
     twitterl_interface:public_timeline().
 my_timeline(Login, _Password, _Args) ->
@@ -127,13 +129,13 @@ my_timeline(Login, _Password, _Args) ->
 %% These methods will return more detailed information
 %% including who is friends with who & retrieving conversations.
 user_followers(Login, Password, _Args) ->
-    twitterl_interface:handle_user(followers, Login, Password,nil).
+    twitterl_interface:handle_status(followers, Login, Password,nil).
 user_friends(Login, Password, _Args) ->
-    twitterl_interface:handle_user(friends, Login, Password, nil).
+    twitterl_interface:handle_status(friends, Login, Password, nil).
 user_timeline(Login, Password, _Args) ->
-    twitterl_interface:handle_user(user_timeline, Login, Password, nil).
+    twitterl_interface:handle_status(user_timeline, Login, Password, nil).
 user_show(Login, Password, Args) ->
-    twitterl_interface:handle_user(user_show, Login, Password, Args).
+    twitterl_interface:handle_status(user_show, Login, Password, Args).
 public_timeline(Login, Password, _Args) ->
     twitterl_interface:handle_status(public_timeline, Login, Password, nil).
 status_show(Login, Password, Args) ->
