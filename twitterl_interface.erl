@@ -168,6 +168,9 @@ handle_status(Type,User,Pass) ->
     handle_status(Type,User,Pass,nil).
 handle_status(Type,User,Pass,Args) ->
     case Type of
+	new ->
+	    HttpResponse = request_url(post,?StatusesUrl++"update.xml", User, Pass, Args),
+	    HttpResponse;
 	user_timeline ->
 	    get_status(?StatusesUrl++"user_timeline.xml",User,Pass);
 	public_timeline ->
@@ -195,8 +198,9 @@ handle_user(Type,User,Pass,Args) ->
 		_ -> {error, {Type, Args}}
 	    end
    end.
+
 get_user(Url,User,Pass) ->
-    case get_xml(Url, User, Pass) of
+    case get_xml(get,Url, User, Pass) of
 	{ok,Xml} ->
 	    lists:reverse(parse_users(Xml));
 	{error,Error} ->
@@ -204,7 +208,7 @@ get_user(Url,User,Pass) ->
     end.
 
 get_status(Url,User,Pass) ->
-     case get_xml(Url, User, Pass) of
+     case get_xml(get,Url, User, Pass) of
 	{ok,Xml} ->
 	    lists:reverse(parse_statuses(Xml));
 	{error,Error} ->
@@ -213,9 +217,16 @@ get_status(Url,User,Pass) ->
 
 %% Parsing functionality
 get_xml(Url) ->
-    get_xml(Url, nil, nil).
+    get_xml(get,Url, nil, nil).
+get_xml(post,Url,Login,Password) ->
+    case request_url(post,Url,Login,Password) of
+	{ok, Body} ->
+	    {ok, get_body(Body)}; 
+	{error, Error} ->
+	    {error, Error}
+    end;
 %% Get the actual XML response.
-get_xml(Url,Login,Password) ->
+get_xml(get,Url,Login,Password) ->
     case request_url(get,Url,Login,Password) of
 	{ok, Body} ->
 	    {ok, get_body(Body)}; 
@@ -225,7 +236,7 @@ get_xml(Url,Login,Password) ->
 
 %% Get the the twitters in XML format.
 get_twitters(Url) ->
-    case get_xml(Url,nil, nil) of
+    case get_xml(get,Url,nil, nil) of
 	{ok,Xml} ->
 	    lists:reverse(parse_items(Xml));
 	{error,Error} ->
@@ -324,10 +335,10 @@ request_url(get,Url,nil,nil) ->
 request_url(get,Url, Login, Pass) ->
     check_response(http:request(get, {Url, headers(Login, Pass)}, [], [])).
 request_url(post, Url, Login, Pass,Args) ->
-    Body = twitterl_interface:build_keyval(Args),
+    Body = build_keyval(Args),
     HttpResult = http:request(post, {Url, headers(Login, Pass), 
 				     "application/x-www-form-urlencoded", Body} , [], []),
-    check_response(HttpResponse).
+    check_response(HttpResult).
 
 build_keyval(Args) ->
     Body = lists:concat(
