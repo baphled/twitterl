@@ -62,7 +62,7 @@ trends() ->
     parse_json(?SearchTrendsUrl).
 
 parse_json(Url) ->
-    case request_url(Url, nil, nil) of
+    case request_url(get, Url, nil, nil) of
 	{ok,Body} ->
 	    Json = json_parser:dvm_parser(list_to_binary(Body)),
 	    {ok,{struct,Reply},_} = Json,
@@ -150,7 +150,7 @@ public_timeline() ->
 
 %% Checks to see if the user can actually log in.
 auth_user(Login, Password) ->
-    case request_url(?VerifyUrl, Login, Password) of
+    case request_url(get,?VerifyUrl, Login, Password) of
         {ok,Body} ->
 	    case Body of
 		    "<authorized>true</authorized>" -> true;
@@ -216,7 +216,7 @@ get_xml(Url) ->
     get_xml(Url, nil, nil).
 %% Get the actual XML response.
 get_xml(Url,Login,Password) ->
-    case request_url(Url,Login,Password) of
+    case request_url(get,Url,Login,Password) of
 	{ok, Body} ->
 	    {ok, get_body(Body)}; 
 	{error, Error} ->
@@ -318,10 +318,10 @@ format_text(Xml, [Xpath | Tail], Result) ->
     format_text(Xml, Tail, Results).
 
 %% Make a request to an URL.
-request_url(Url,nil,nil) ->
+request_url(get,Url,nil,nil) ->
     check_response(http:request(get, {Url, headers(nil, nil)}, [], []));
 %% Make an authenticated request to the specified URL.
-request_url(Url, Login, Pass) ->
+request_url(get,Url, Login, Pass) ->
     check_response(http:request(get, {Url, headers(Login, Pass)}, [], [])).
 
 %% Checks out HTTP response, if we get a 200 retrieve

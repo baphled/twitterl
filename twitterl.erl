@@ -96,6 +96,7 @@ handle_call({Client, Method, Args}, _From, State) ->
 handle_call(_, _From, State) -> {noreply, ok, State}.
 
 terminate(_Reason, State) ->
+    io:format("Shutting down...~n"),
     {ok,State}.
 
 code_change(_OldVsn, State, _Extra) ->
