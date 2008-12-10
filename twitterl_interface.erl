@@ -32,7 +32,7 @@
 -record(tweet, {title, pubDate, link}).
 -record(user, {id, name, screen_name, location, description, profile_image_url, url, protected, followers_count, status}).
 
--export([handle_status/3,handle_status/4]).
+-export([handle_status/4]).
 %-export([status_followers/2,status_friends/2]) .
 % Search methods
 -export([auth_user/2,trends/0,tweets/2,term/1]).
@@ -163,8 +163,8 @@ auth_user(Login, Password) ->
 
 %%% Handles each of our user & status requests
 %@private
-handle_status(Type,User,Pass) ->
-    handle_status(Type,User,Pass,nil).
+handle_status(Type,User,Pass,nil) ->
+    handle_status(Type,User,Pass,nil);
 handle_status(Type,User,Pass,Args) ->
     case Type of
 	followers ->
@@ -237,7 +237,7 @@ parse_users(Xml) ->
     [parse_user(User) || User <- xmerl_xpath:string("/users/user",Xml)].
 
 parse_statuses(Xml) ->
-    [parse_status(Status) || Status <- xmerl_xpath:string("/statuses/status",Xml)].
+    [parse_status(Status) || Status <- xmerl_xpath:string("/statuses/status|/status",Xml)].
 
 parse_status(Xml) when is_list(Xml) ->
     xmerl_xpath:string("/status",Xml);
