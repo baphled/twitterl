@@ -32,7 +32,7 @@
 -record(tweet, {title, pubDate, link}).
 -record(user, {id, name, screen_name, location, description, profile_image_url, url, protected, followers_count, friends_count, created_at, favourites_count, utc_offset, time_zone, following, notifications, statuses_count,status}).
 
--export([handle_status/3,handle_status/4]).
+-export([handle_status/3,handle_status/4,handle_user/3,handle_user/4]).
 
 % Search methods
 -export([auth_user/2,trends/0,tweets/2,term/1]).
@@ -168,15 +168,6 @@ handle_status(Type,User,Pass) ->
     handle_status(Type,User,Pass,nil).
 handle_status(Type,User,Pass,Args) ->
     case Type of
-	user_followers ->
-	    get_user(?StatusesUrl++"followers.xml",User,Pass);
-	user_friends ->
-            get_user(?StatusesUrl++"friends.xml",User,Pass);
-	user_show ->
-	    case is_list(Args) of
-		true -> get_user(?UsersUrl"show/" ++ Args ++ ".xml", User,Pass);
-		_ -> {error, {Type, Args}}
-	    end;
 	user_timeline ->
 	    get_status(?StatusesUrl++"user_timeline.xml",User,Pass);
 	public_timeline ->
@@ -190,6 +181,20 @@ handle_status(Type,User,Pass,Args) ->
 	    {error,"Invalid status type"}
     end.
 
+handle_user(Type,User,Pass) ->
+    handle_user(Type,User,Pass,nil).
+handle_user(Type,User,Pass,Args) ->
+    case Type of
+	user_followers ->
+	    get_user(?StatusesUrl++"followers.xml",User,Pass);
+	user_friends ->
+            get_user(?StatusesUrl++"friends.xml",User,Pass);
+	user_show ->
+	    case is_list(Args) of
+		true -> get_user(?UsersUrl"show/" ++ Args ++ ".xml", User,Pass);
+		_ -> {error, {Type, Args}}
+	    end
+   end.
 get_user(Url,User,Pass) ->
     case get_xml(Url, User, Pass) of
 	{ok,Xml} ->
