@@ -175,7 +175,7 @@ handle_status(Type,User,Pass,Args) ->
 	    get_status("user_timeline.xml",User,Pass);
 	public_timeline ->
 	    get_status("public_timeline.xml",User,Pass);
-	user_show ->
+	status_show ->
 	    case is_list(Args) of
 		true -> get_status("show.xml?id="++Args, User,Pass);
 		_ -> {error, {Type, Args}}

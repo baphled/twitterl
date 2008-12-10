@@ -15,6 +15,11 @@
 %% Wrapper methods, exposed to show commands useable with call
 -export([find_trends/3,find_tweets/3,find_term/3]).
 -export([tweet_timeline/3,my_timeline/3]).
+
+%Status based methods
+-export([status_show/3]).
+
+%User based methods
 -export([user_followers/3,user_friends/3,user_timeline/3,public_timeline/3]).
 %-compile(export_all).
 %% gen_server callbacks
@@ -131,4 +136,4 @@ user_timeline(Login, Password, _Args) ->
 public_timeline(Login, Password, _Args) ->
     twitterl_interface:handle_status(public_timeline, Login, Password, nil).
 status_show(Login, Password, Args) ->
-    twitterl_interface:handle_status(user_show, Login, Password, Args).
+    twitterl_interface:handle_status(status_show, Login, Password, Args).
